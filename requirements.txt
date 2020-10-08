@@ -1,0 +1,7 @@
+# Requirements for clackbot
+
+wheel
+python-dotenv
+discord
+emoji
+PyNaCl
