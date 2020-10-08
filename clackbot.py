@@ -18,7 +18,7 @@ bot = commands.Bot(command_prefix='!')
 # Set up bot commands
 @bot.command(name='follow')
 async def join_voice(context):
-    """Follow a user into a voice channel"""
+    """Follow a user into a voice channel."""
     if context.author.voice is None:
         await context.send('You need to be in a voice channel to run that command here (confusing, huh?)')
         return
@@ -29,13 +29,13 @@ async def join_voice(context):
 
 @bot.command(name='leave')
 async def leave_voice(context):
-    """Leave the currently-joined voice channel"""
+    """Leave the currently-joined voice channel."""
     await context.voice_client.disconnect()
 
 
 @bot.command(name='clack')
 async def play_clacking(context):
-    """Play a 'clacking' sound into the currently-joined voice channel"""
+    """Play a 'clacking' sound into the currently-joined voice channel."""
     guild = context.guild
     voice_client: discord.VoiceClient = discord.utils.get(bot.voice_clients, guild=guild)
     audio_source = discord.FFmpegPCMAudio('clacking.wav')
@@ -49,6 +49,7 @@ async def play_clacking(context):
 
 @bot.command(name='stop')
 async def stop_clacking(context):
+    """Stop playing the 'clacking' sound."""
     guild = context.guild
     voice_client: discord.VoiceClient = discord.utils.get(bot.voice_clients, guild=guild)
     if voice_client is None:
@@ -60,7 +61,7 @@ async def stop_clacking(context):
 
 @bot.command(name='poll')
 async def poll(context, *args):
-    """Create a poll with up to twenty-six answers (good lord)"""
+    """Create a poll with up to twenty answers (good lord)."""
 
     # Check input for common error conditions
     if len(args) == 0:

@@ -25,6 +25,8 @@ You should install the required pip packages by typing:
 
     $ pip install -r requirements.txt
 
+You will also need to install _ffmpeg_.
+
 ### .env file
 clackbot looks for a .env file containing a Discord API token in the format:
 
