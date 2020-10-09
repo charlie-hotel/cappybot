@@ -42,7 +42,6 @@ async def play_clacking(context):
 
     # randomize list
     random.shuffle(filenames)
-    print(filenames[0])
 
     # set up audio source
     guild = context.guild
