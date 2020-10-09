@@ -1,6 +1,7 @@
 import os
 import discord
 import emoji
+import random
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -36,9 +37,17 @@ async def leave_voice(context):
 @bot.command(name='clack')
 async def play_clacking(context):
     """Play a 'clacking' sound into the currently-joined voice channel."""
+    # Get list of filenames from 'clacks' directory
+    (_,  _, filenames) = next(os.walk('clacks/'))
+
+    # randomize list
+    random.shuffle(filenames)
+    print(filenames[0])
+
+    # set up audio source
     guild = context.guild
     voice_client: discord.VoiceClient = discord.utils.get(bot.voice_clients, guild=guild)
-    audio_source = discord.FFmpegPCMAudio('clacking.wav')
+    audio_source = discord.FFmpegPCMAudio(f'clacks/{filenames[0]}')
 
     if voice_client is None:
         return
@@ -62,7 +71,6 @@ async def stop_clacking(context):
 @bot.command(name='poll')
 async def poll(context, *args):
     """Create a poll with up to twenty answers (good lord)."""
-
     # Check input for common error conditions
     if len(args) == 0:
         await context.send("ERROR: No poll question or answers specified.")
