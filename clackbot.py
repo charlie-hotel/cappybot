@@ -2,19 +2,22 @@ import discord
 import emoji
 import os
 import random
+import re
 import requests
 
 from discord.ext import commands
 from dotenv import load_dotenv
+from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = 0.3
+VERSION_NUMBER = 0.4
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Set constants from environment variables
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+DB_INIT_KEY = os.getenv('DB_INIT_KEY')
 
 # Set up bot
 bot = commands.Bot(command_prefix='!')
@@ -26,10 +29,12 @@ async def say_version(context):
     """Display clackbot version information."""
     await context.send(f'clackbot {VERSION_NUMBER} © 2020 <@!572963354902134787>')
 
+
 @bot.command(name='source')
 async def say_source_url(context):
     """Display the link to clackbot's source code on GitHub."""
     await context.send('https://github.com/doopqoob/clackbot')
+
 
 @bot.command(name='follow')
 async def join_voice(context):
@@ -187,7 +192,7 @@ async def query_kb_db(context, part_num=None):
     # Take out 'success' -- there's no corresponding key in the fields_dict and no need for it anymore
     del result['success']
 
-    # ---> Build the response <---
+    # Build the response
     response = f"Here's what I found about part {part_num}:\n"
     for key in result.keys():
         if result[key] is not None:
@@ -197,6 +202,162 @@ async def query_kb_db(context, part_num=None):
 
     # aaand send it off!
     await context.send(response)
+
+
+@bot.command(name='quote')
+async def get_quote(context, *args):
+    """Get a quote from the database."""
+    # Get quote ID, if any, as first argument
+    quote_id = None
+    if len(args) == 1:
+        quote_id = args[0]
+
+    headers = {'Content-type': 'application/json'}
+    response = None
+    if quote_id:
+        # Validate input as a valid version 4 UUID before continuing
+        try:
+            UUID(quote_id, version=4)
+        except:
+            await context.send("Invalid quote ID")
+            return
+
+        # Get quote
+        params = {"id": quote_id}
+        response = requests.get('http://127.0.0.1:5000/getquote', params=params, headers=headers)
+    else:
+        response = requests.get('http://127.0.0.1:5000/getquote', headers=headers)
+
+    if response.status_code == 404:
+        await context.send("Quote not found")
+        return
+
+    # parse the JSON into a python object
+    quote = response.json()
+
+    # assemble the text we're going to send to discord
+    quote_text = ""
+
+    for line in quote['quote']:
+        quote_text += "> " + line + "\n"
+
+    quote_text += "said by <@!" + str(quote['said_by']['id']) + ">\n"
+    quote_text += "added " + quote['added_at'] + " by <@!" + str(quote['added_by']['id']) + ">\n"
+    quote_text += "id " + quote['id']
+
+    # and send it off!
+    await context.send(quote_text)
+
+
+@bot.command(name='delquote')
+async def del_quote(context, *args):
+    """Delete a quote from the database."""
+    # Get quote ID, if any, as first argument
+    quote_id = None
+    if len(args) == 1:
+        quote_id = args[0]
+
+    if not quote_id:
+        await context.send("You must provide a quote ID.")
+        return
+
+    # Validate input as a valid version 4 UUID before continuing
+    try:
+        UUID(quote_id, version=4)
+    except:
+        await context.send("Invalid quote ID")
+        return
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+    # Get quote
+    params = {"id": quote_id}
+    headers = {'Content-type': 'application/json'}
+    response = requests.get('http://127.0.0.1:5000/getquote', params=params, headers=headers)
+
+    print(response.json())
+
+    quote = response.json()
+
+    if 'added_by' not in quote:
+        await context.send("Invalid quote ID")
+        return
+
+    # Make sure the user is authorized to delete the quote
+    # print(context.author.top_role.name)
+    if context.author.top_role.name != "Keyboard Lords":
+        if quote['added_by']['id'] != context.author.id and quote['said_by']['id'] != context.author.id:
+            await context.send("Only the person who submitted the quote, the person named in the quote, " +
+                               f"or an administrator may delete quote {quote_id}")
+            return
+
+    # Delete the quote
+    response = requests.get('http://127.0.0.1:5000/delquote', params=params, headers=headers)
+    print(response.json())
+
+
+# Add a quote with !addquote
+@bot.event
+async def on_message(message):
+    """Examine messages to see whether they meet the syntax for adding a quote"""
+
+    # If the following isn't run, then this event sucks up all commands and doesn't let them run (thanks, discord.py?)
+    await bot.process_commands(message)
+
+    # TODO: there has to be a way to do this whole match-and-find-repeated-subsequences thing with one operation instead
+    # of all the lines that follow
+    match = re.match(r'^(>\s.+\n)<@!(\d+)>\s+!addquote$', message.content, re.DOTALL)
+
+    if not match:
+        return
+
+    # match group 0 is the quote content, match group 1 is the user being quoted
+    raw_quote = match.groups()[0]
+    quoted_user_id = int(match.groups()[1])
+
+    # split up the raw quote by linefeed
+    split_quote = raw_quote.split('\n')
+
+    # remove the last item if it is an empty string
+    if split_quote[-1] == "":
+        split_quote.pop()
+
+    # Build the quote object we will submit to the database
+    quote = {}
+    quote['added_by'] = {}
+    quote['added_by']['id'] = message.author.id
+    quote['added_by']['handle'] = message.author.name
+    quote['added_by']['discriminator'] = int(message.author.discriminator)
+
+    quoted_user = bot.get_user(quoted_user_id)
+    quote['said_by'] = {}
+    quote['said_by']['id'] = quoted_user.id
+    quote['said_by']['handle'] = quoted_user.name
+    quote['said_by']['discriminator'] = int(quoted_user.discriminator)
+
+    quote['quote'] = []
+    for line in split_quote:
+        quote['quote'].append(line[2:])
+
+    # Submit to the database
+    headers = {'Content-type': 'application/json'}
+    response = requests.post('http://127.0.0.1:5000/addquote', json=quote, headers=headers)
+    response = response.json()
+
+    # Did the quote get added successfully?
+    if response.status_code != 201:
+        await message.channel.send("Something went wrong adding your quote.")
+        return
+
+    # Is the response a valid uuid?
+    try:
+        UUID(response['id'], version=4)
+    except:
+        # If not, failure.
+        await message.channel.send("Something went wrong adding your quote.")
+        return
+
+    # if so, success!
+    await message.channel.send("Added quote " + response['id'])
+    return
 
 
 # run the bot
