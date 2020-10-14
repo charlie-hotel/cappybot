@@ -17,7 +17,7 @@ load_dotenv()
 
 # Set constants from environment variables
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-DB_INIT_KEY = os.getenv('DB_INIT_KEY')
+API_HOST = os.getenv('API_HOST')
 
 # Set up bot
 bot = commands.Bot(command_prefix='!')
@@ -218,15 +218,15 @@ async def get_quote(context, *args):
         # Validate input as a valid version 4 UUID before continuing
         try:
             UUID(quote_id, version=4)
-        except:
+        except ValueError:
             await context.send("Invalid quote ID")
             return
 
         # Get quote
         params = {"id": quote_id}
-        response = requests.get('http://127.0.0.1:5000/getquote', params=params, headers=headers)
+        response = requests.get(f'http://{API_HOST}/getquote', params=params, headers=headers)
     else:
-        response = requests.get('http://127.0.0.1:5000/getquote', headers=headers)
+        response = requests.get(f'http://{API_HOST}/getquote', headers=headers)
 
     if response.status_code == 404:
         await context.send("Quote not found")
@@ -264,14 +264,14 @@ async def del_quote(context, *args):
     # Validate input as a valid version 4 UUID before continuing
     try:
         UUID(quote_id, version=4)
-    except:
+    except ValueError:
         await context.send("Invalid quote ID")
         return
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
     # Get quote
     params = {"id": quote_id}
     headers = {'Content-type': 'application/json'}
-    response = requests.get('http://127.0.0.1:5000/getquote', params=params, headers=headers)
+    response = requests.get(f'http://{API_HOST}/getquote', params=params, headers=headers)
 
     print(response.json())
 
@@ -290,7 +290,7 @@ async def del_quote(context, *args):
             return
 
     # Delete the quote
-    response = requests.get('http://127.0.0.1:5000/delquote', params=params, headers=headers)
+    response = requests.get(f'http://{API_HOST}/delquote', params=params, headers=headers)
     print(response.json())
 
 
@@ -339,7 +339,7 @@ async def on_message(message):
 
     # Submit to the database
     headers = {'Content-type': 'application/json'}
-    response = requests.post('http://127.0.0.1:5000/addquote', json=quote, headers=headers)
+    response = requests.post(f'http://{API_HOST}/addquote', json=quote, headers=headers)
     response = response.json()
 
     # Did the quote get added successfully?
@@ -350,7 +350,7 @@ async def on_message(message):
     # Is the response a valid uuid?
     try:
         UUID(response['id'], version=4)
-    except:
+    except ValueError:
         # If not, failure.
         await message.channel.send("Something went wrong adding your quote.")
         return
