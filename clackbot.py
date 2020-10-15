@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = 0.4
+VERSION_NUMBER = "0.4.1 beta"
 
 # Load environment variables from .env file
 load_dotenv()
