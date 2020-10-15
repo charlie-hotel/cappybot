@@ -291,7 +291,13 @@ async def del_quote(context, *args):
 
     # Delete the quote
     response = requests.get(f'http://{API_HOST}/delquote', params=params, headers=headers)
-    print(response.json())
+
+    if response.status_code == 200:
+        await context.send("Successfully deleted quote " + quote_id)
+        return
+    else:
+        await context.send("Something went wrong deleting quote " + quote_id)
+        return
 
 
 # Add a quote with !addquote
