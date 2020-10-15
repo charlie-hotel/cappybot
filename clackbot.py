@@ -243,10 +243,20 @@ async def get_quote(context, *args):
 
     quote_text += "said by <@!" + str(quote['said_by']['id']) + ">\n"
     quote_text += "added " + quote['added_at'] + " by <@!" + str(quote['added_by']['id']) + ">\n"
-    quote_text += "id " + quote['id']
+    quote_text += "id " + quote['id'] + "\n"
+    quote_text += "score: " + str(quote['score'])
 
     # and send it off!
-    await context.send(quote_text)
+    message = await context.send(quote_text)
+
+    #add voting buttons
+    emoji_desc = ':up_arrow:'
+    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    await message.add_reaction(emoji_unicode)
+
+    emoji_desc = ':down_arrow:'
+    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    await message.add_reaction(emoji_unicode)
 
 
 @bot.command(name='delquote')
