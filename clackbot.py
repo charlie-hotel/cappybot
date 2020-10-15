@@ -340,12 +340,13 @@ async def on_message(message):
     # Submit to the database
     headers = {'Content-type': 'application/json'}
     response = requests.post(f'http://{API_HOST}/addquote', json=quote, headers=headers)
-    response = response.json()
 
     # Did the quote get added successfully?
     if response.status_code != 201:
         await message.channel.send("Something went wrong adding your quote.")
         return
+
+    response = response.json()
 
     # Is the response a valid uuid?
     try:
