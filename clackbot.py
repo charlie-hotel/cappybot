@@ -1,5 +1,6 @@
 import discord
 import emoji
+import json
 import os
 import random
 import re
@@ -10,7 +11,7 @@ from dotenv import load_dotenv
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = "0.4.1 beta"
+VERSION_NUMBER = "0.4.2 beta"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -186,7 +187,10 @@ async def query_kb_db(context, part_num=None):
     result = result[0]
 
     if result['success'] is False:
-        await context.send(f"ERROR: Part number {part_num} not found in database.")
+        message = f"ERROR: Part number {part_num} not found in database.\n"
+        message += "Would you like to add it to the database? Just visit\n"
+        message += f"https://sharktastica.co.uk/kb_db_sub.php?pn={part_num}"
+        await context.send(message)
         return
 
     # Take out 'success' -- there's no corresponding key in the fields_dict and no need for it anymore
@@ -249,7 +253,19 @@ async def get_quote(context, *args):
     # and send it off!
     message = await context.send(quote_text)
 
-    #add voting buttons
+    # make note of the message id to track voting
+    params = {"message_id": message.id,
+              "quote_id": quote['id']}
+    print(params)
+    response = requests.get(f'http://{API_HOST}/addvotemessage', params=params, headers=headers)
+
+    if response.status_code != 201:
+        print(response.status_code)
+        print(response.content)
+        await context.send("Something went wrong preparing this quote for voting.")
+        return
+
+    # add voting buttons
     emoji_desc = ':up_arrow:'
     emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
     await message.add_reaction(emoji_unicode)
@@ -372,8 +388,79 @@ async def on_message(message):
         await message.channel.send("Something went wrong adding your quote.")
         return
 
+    rebuilt_quote = ""
     # if so, success!
-    await message.channel.send("Added quote " + response['id'])
+    for line in split_quote:
+        rebuilt_quote += f'> {line}\n'
+
+    rebuilt_quote += "said by <@!" + str(quote['said_by']['id']) + ">\n"
+    rebuilt_quote += "added by <@!" + str(quote['added_by']['id']) + ">\n"
+    rebuilt_quote += "id " + response['id'] + "\n"
+    rebuilt_quote += "score: 0"
+
+    quote_message = await message.channel.send(rebuilt_quote)
+
+    # make note of the message id to track voting
+    params = {"message_id": quote_message.id,
+              "quote_id": response['id']}
+    print(params)
+    response = requests.get(f'http://{API_HOST}/addvotemessage', params=params, headers=headers)
+
+    if response.status_code != 201:
+        print(response.status_code)
+        print(response.content)
+        await message.channel.send("Something went wrong preparing this quote for voting.")
+        return
+
+    # add voting buttons
+    emoji_desc = ':up_arrow:'
+    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    await quote_message.add_reaction(emoji_unicode)
+
+    emoji_desc = ':down_arrow:'
+    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    await quote_message.add_reaction(emoji_unicode)
+    return
+
+
+@bot.event
+async def on_raw_reaction_add(payload):
+    """Called when a discord user adds a reaction to a message"""
+
+    # If it's the bot adding a reaction, igonre it
+    if payload.member.id == bot.user.id:
+        return
+
+    # Convert emoji into something pronounceable
+    emoji_name = emoji.demojize(str(payload.emoji))
+
+    # If it's not an upvote or a downvote, ignore it
+    if emoji_name != ':up_arrow:' and emoji_name != ':down_arrow:':
+        return
+
+    # Build the ballot
+    ballot = {"message_id": payload.message_id,
+              "voter_id": {
+                  "id": payload.member.id,
+                  "handle": payload.member.display_name,
+                  "discriminator": int(payload.member.discriminator)}}
+
+    # Determine the vote
+    if emoji_name == ':up_arrow:':
+        ballot['vote'] = 1
+    elif emoji_name == ':down_arrow:':
+        ballot['vote'] = -1
+
+    print(json.dumps(ballot, indent=4))
+
+    # Submit to the database
+    headers = {'Content-type': 'application/json'}
+    response = requests.post(f'http://{API_HOST}/vote', json=ballot, headers=headers)
+
+    if response.status_code != 201:
+        print(f"error recording vote for {ballot['voter_id']['handle']} ({ballot['voter_id']['id']})")
+        print(response.content)
+
     return
 
 
