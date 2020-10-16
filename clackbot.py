@@ -1,6 +1,5 @@
 import discord
 import emoji
-import json
 import os
 import random
 import re
@@ -463,8 +462,6 @@ async def on_raw_reaction_add(payload):
         ballot['vote'] = -1
     elif emoji_name == ':keycap_0:':
         ballot['vote'] = 0
-
-    print(json.dumps(ballot, indent=4))
 
     # Submit to the database
     headers = {'Content-type': 'application/json'}
