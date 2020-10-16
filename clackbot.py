@@ -274,6 +274,10 @@ async def get_quote(context, *args):
     emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
     await message.add_reaction(emoji_unicode)
 
+    emoji_desc = ':keycap_0:'
+    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    await message.add_reaction(emoji_unicode)
+
 
 @bot.command(name='delquote')
 async def del_quote(context, *args):
@@ -390,8 +394,8 @@ async def on_message(message):
 
     rebuilt_quote = ""
     # if so, success!
-    for line in split_quote:
-        rebuilt_quote += f'> {line}\n'
+    for line in quote['quote']:
+        rebuilt_quote += '> ' + line + '\n'
 
     rebuilt_quote += "said by <@!" + str(quote['said_by']['id']) + ">\n"
     rebuilt_quote += "added by <@!" + str(quote['added_by']['id']) + ">\n"
@@ -420,6 +424,11 @@ async def on_message(message):
     emoji_desc = ':down_arrow:'
     emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
     await quote_message.add_reaction(emoji_unicode)
+
+    emoji_desc = ':keycap_0:'
+    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    await quote_message.add_reaction(emoji_unicode)
+
     return
 
 
@@ -433,9 +442,11 @@ async def on_raw_reaction_add(payload):
 
     # Convert emoji into something pronounceable
     emoji_name = emoji.demojize(str(payload.emoji))
+    print(emoji_name)
 
-    # If it's not an upvote or a downvote, ignore it
-    if emoji_name != ':up_arrow:' and emoji_name != ':down_arrow:':
+    # If it's not an upvote, a downvote, or a 0 vote, ignore it
+    allowed_emoji = [':up_arrow:', ':down_arrow:', ':keycap_0:']
+    if emoji_name not in allowed_emoji:
         return
 
     # Build the ballot
@@ -450,6 +461,8 @@ async def on_raw_reaction_add(payload):
         ballot['vote'] = 1
     elif emoji_name == ':down_arrow:':
         ballot['vote'] = -1
+    elif emoji_name == ':keycap_0:':
+        ballot['vote'] = 0
 
     print(json.dumps(ballot, indent=4))
 
