@@ -157,14 +157,17 @@ async def query_kb_db(context, part_num=None):
                    'switches':      "Switches",
                    'date':          "First Appeared",
                    'keys':          "Key Count",
+                   'formafactor':   "Form Factor",
                    'keycaps':       "Keycap Type",
                    'case':          "Case Colour",
                    'branding':      "Branding",
                    'feet':          "Feet Type",
                    'protocol':      "Protocol",
                    'connection':    "Connection",
+                   'cable':         "Cable",
                    'layout':        "Layout/Language",
                    'mouse':         "Int. Pointing Device",
+                   'price':         "Price",
                    'notes':         "Notes"}
 
     # Extract just the field names from fields_dict
