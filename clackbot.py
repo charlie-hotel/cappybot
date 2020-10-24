@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = "0.5.1"
+VERSION_NUMBER = "0.5.2"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -157,7 +157,7 @@ async def query_kb_db(context, part_num=None):
                    'switches':      "Switches",
                    'date':          "First Appeared",
                    'keys':          "Key Count",
-                   'formafactor':   "Form Factor",
+                   'formfactor':    "Form Factor",
                    'keycaps':       "Keycap Type",
                    'case':          "Case Colour",
                    'branding':      "Branding",
