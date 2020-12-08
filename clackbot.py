@@ -236,7 +236,7 @@ async def search_kb_db(context, *args):
     result = result.json()
 
     # Handle situation where no results are returned
-    if result[0]['success'] is False:
+    if result['success'] is False:
         message = f'ERROR: Could not find "{query}" in database.'
         await context.send(message)
         return
@@ -244,8 +244,11 @@ async def search_kb_db(context, *args):
     # Build the response
     response = f"Here's what I found for _{query}_:\n"
 
+    hits = result['hits']
+
     # Iterate through each keyboard in result.
-    for index, kb in enumerate(result):
+    for index, kb in enumerate(result['results']):
+        hits -= 1
         response += f"> {index + 1}:\n" \
                     f"> _Part number_: {kb['pn']}\n" \
                     f"> _Name_: {kb['name']}\n" \
@@ -254,13 +257,16 @@ async def search_kb_db(context, *args):
                     f"> _Date First Seen_: {kb['date']}\n" \
                     f"\n"
 
-    response += "You can type `!kbdb [part number]` to find out more!\n"
-    await context.send(response)
+    if hits > 0:
+        response += f'Plus an additional {hits} results.\n\n'
 
-    response = 'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
+    response += "You can type `!kbdb [part number]` to find out more about a specific keyboard.\n"
     await context.send(response)
 
     response = 'To learn how to search efficiently, see https://sharktastica.co.uk/kb_db_help.php#SearchingGuide'
+    await context.send(response)
+
+    response = 'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
     await context.send(response)
 
 
