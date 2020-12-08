@@ -213,10 +213,7 @@ async def query_kb_db(context, part_num=None):
 
 @bot.command(name='kbsearch')
 async def search_kb_db(context, *args):
-    """
-    Search SharktasticA's IBM keyboard database.
-    To learn how to search efficiently, see https://sharktastica.co.uk/kb_db_help.php#SearchingGuide
-    """
+    """Search SharktasticA's IBM keyboard database."""
 
     # The query is the first argument given
     # (Shark's database takes care of figuring out
@@ -259,7 +256,9 @@ async def search_kb_db(context, *args):
 
     response += "You can type `!kbdb [part number]` to find out more!\n" \
                 '\n' \
-                'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
+                'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources' \
+                '\n' \
+                'To learn how to search efficiently, see https://sharktastica.co.uk/kb_db_help.php#SearchingGuide'
 
     # send it off!
     await context.send(response)
