@@ -254,8 +254,7 @@ async def search_kb_db(context, *args):
                     f"> _Date First Seen_: {kb['date']}\n" \
                     f"\n"
 
-    response += "You can type `!kbdb [part number]` to find out more!\n"\
-
+    response += "You can type `!kbdb [part number]` to find out more!\n"
     await context.send(response)
 
     response = 'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
