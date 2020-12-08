@@ -210,6 +210,12 @@ async def query_kb_db(context, part_num=None):
     await context.send(response)
 
 
+@bot.command(name='kbsearch')
+async def search_kb_db(context, *args):
+    """Search SharktasticA's model M keyboard database"""
+    await context.send(context.message.content)
+
+
 @bot.command(name='quote')
 async def get_quote(context, *args):
     """Get a quote from the database."""
