@@ -185,9 +185,6 @@ async def query_kb_db(context, part_num=None):
     # Convert JSON into a python data structure
     result = result.json()
 
-    # Extract only the first element of the result
-    result = result[0]
-
     # Handle situation where no results are returned
     if result['success'] is False:
         message = f"ERROR: Part number {part_num} not found in database.\n"
@@ -196,15 +193,13 @@ async def query_kb_db(context, part_num=None):
         await context.send(message)
         return
 
-    # Take out 'success' -- there's no corresponding key in the fields_dict and no need for it anymore
-    del result['success']
-
     # Build the response
     response = f"Here's what I found about part {part_num}:\n"
-    for key in result.keys():
-        if result[key] is not None:
-            response += f'**{fields_dict[key]}:** {result[key]}\n'
-    response += ('-' * 10) + '\n'
+    for kb in result['results']:
+        for key in kb.keys():
+            if kb[key] is not None:
+                response += f'**{fields_dict[key]}:** {result[key]}\n'
+    response += '\n'
     response += 'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
 
     # aaand send it off!
