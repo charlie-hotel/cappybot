@@ -57,7 +57,7 @@ async def leave_voice(context):
 async def play_clacking(context):
     """Play a 'clacking' sound into the currently-joined voice channel."""
     # Get list of filenames from 'clacks' directory
-    (_,  _, filenames) = next(os.walk('clacks/'))
+    (_, _, filenames) = next(os.walk('clacks/'))
 
     # randomize list
     random.shuffle(filenames)
@@ -146,29 +146,29 @@ async def query_kb_db(context, part_num=None):
 
     # These are all the fields we're going to request from the database
     # (and their long names for when we display the data in chat)
-    fields_dict = {'pn':            "Part Number",
-                   'fru':           "FRU Part Number",
-                   'name':          "Full Name",
-                   'type':          "Type",
-                   'shorthand':     "Shorthand",
-                   'nickname':      "Nickname",
-                   'model':         "Marketing Name",
-                   'oem':           "OEM (Manufacturer)",
-                   'switches':      "Switches",
-                   'date':          "First Appeared",
-                   'keys':          "Key Count",
-                   'formfactor':    "Form Factor",
-                   'keycaps':       "Keycap Type",
-                   'case':          "Case Colour",
-                   'branding':      "Branding",
-                   'feet':          "Feet Type",
-                   'protocol':      "Protocol",
-                   'connection':    "Connection",
-                   'cable':         "Cable",
-                   'layout':        "Layout/Language",
-                   'mouse':         "Int. Pointing Device",
-                   'price':         "Price",
-                   'notes':         "Notes"}
+    fields_dict = {'pn': "Part Number",
+                   'fru': "FRU Part Number",
+                   'name': "Full Name",
+                   'type': "Type",
+                   'shorthand': "Shorthand",
+                   'nickname': "Nickname",
+                   'model': "Marketing Name",
+                   'oem': "OEM (Manufacturer)",
+                   'switches': "Switches",
+                   'date': "First Appeared",
+                   'keys': "Key Count",
+                   'formfactor': "Form Factor",
+                   'keycaps': "Keycap Type",
+                   'case': "Case Colour",
+                   'branding': "Branding",
+                   'feet': "Feet Type",
+                   'protocol': "Protocol",
+                   'connection': "Connection",
+                   'cable': "Cable",
+                   'layout': "Layout/Language",
+                   'mouse': "Int. Pointing Device",
+                   'price': "Price",
+                   'notes': "Notes"}
 
     # Extract just the field names from fields_dict
     requested_fields = fields_dict.keys()
@@ -188,6 +188,7 @@ async def query_kb_db(context, part_num=None):
     # Extract only the first element of the result
     result = result[0]
 
+    # Handle situation where no results are returned
     if result['success'] is False:
         message = f"ERROR: Part number {part_num} not found in database.\n"
         message += "Would you like to add it to the database? Just visit\n"
@@ -213,22 +214,61 @@ async def query_kb_db(context, part_num=None):
 @bot.command(name='kbsearch')
 async def search_kb_db(context, *args):
     """Search SharktasticA's model M keyboard database"""
-    if context.message.content.count('"') == 2:
-        # Literal search
-        await context.send("Literal search")
-        await context.send(args[0])
 
-    elif context.message.content.count(',') > 0:
-        # Tag search
-        await context.send("Tag search")
+    # The query is the first argument given
+    # (Shark's database takes care of figuring out
+    # what query type this is)
+    query = args[0]
+    result_count = 5
 
-    elif context.message.content.count(';') > 0:
-        # Refined search
-        await context.send("Refined search")
+    # Build the URL
+    url = f'https://sharktastica.co.uk/kb_db_req.php?q={query}&c={result_count}' \
+          f'&dat=JSON&fields=pn,name,shorthand,layout,date'
 
-    else:
-        await context.send("I don't know how to search for that.")
+    # Query the DB
+    result = requests.get(url)
 
+    # Convert JSON into a python data structure
+    result = result.json()
+
+    # Handle situation where no results are returned
+    if result[0]['success'] is False:
+        message = f'ERROR: Could not find "{query}" in database.'
+        await context.send(message)
+        return
+
+    # Build the response
+    response = f"Here's what I found for _{query}_:\n"
+    response += "(part number: name, shorthand, layout, date first seen)\n"
+
+    for index, kb in enumerate(result):
+        response += f"> {index + 1}\n"\
+                    f"> Part number:{kb['pn']}\n" \
+                    f"> Name: {kb['name']}\n" \
+                    f"> Shorthand: {kb['shorthand']}\n" \
+                    f"> Layout: {kb['layout']}\n" \
+                    f"> Date First Seen: {kb['date']}\n" \ 
+                    f"\n"
+
+    # send it off!
+    await context.send(response)
+
+    # if context.message.content.count('"') == 2:
+    #     # Literal search
+    #     await context.send("Literal search")
+    #     query = args[0]
+    #
+    # elif context.message.content.count(',') > 0:
+    #     # Tag search
+    #     await context.send("Tag search")
+    #     query = args[0]
+    #
+    # elif context.message.content.count(';') > 0:
+    #     # Refined search
+    #     await context.send("Refined search")
+    #     query = args[0]
+    # else:
+    #     await context.send("I don't know how to search for that.")
 
 
 @bot.command(name='quote')
@@ -320,7 +360,7 @@ async def del_quote(context, *args):
     except ValueError:
         await context.send("Invalid quote ID")
         return
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
     # Get quote
     params = {"id": quote_id}
     headers = {'Content-type': 'application/json'}
