@@ -225,6 +225,10 @@ async def search_kb_db(context, *args):
     url = f'https://sharktastica.co.uk/kb_db_req.php?q={query}&c={result_count}' \
           f'&dat=JSON&fields=pn,name,shorthand,layout,date'
 
+    # Because the query takes a long time to run,
+    # indicate to the user that something is happening.
+    await context.send(f"Searching for _{query}_. Just a moment...")
+
     # Query the DB
     result = requests.get(url)
 
@@ -251,23 +255,6 @@ async def search_kb_db(context, *args):
 
     # send it off!
     await context.send(response)
-
-    # if context.message.content.count('"') == 2:
-    #     # Literal search
-    #     await context.send("Literal search")
-    #     query = args[0]
-    #
-    # elif context.message.content.count(',') > 0:
-    #     # Tag search
-    #     await context.send("Tag search")
-    #     query = args[0]
-    #
-    # elif context.message.content.count(';') > 0:
-    #     # Refined search
-    #     await context.send("Refined search")
-    #     query = args[0]
-    # else:
-    #     await context.send("I don't know how to search for that.")
 
 
 @bot.command(name='quote')
