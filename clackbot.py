@@ -239,15 +239,14 @@ async def search_kb_db(context, *args):
 
     # Build the response
     response = f"Here's what I found for _{query}_:\n"
-    response += "(part number: name, shorthand, layout, date first seen)\n"
 
     for index, kb in enumerate(result):
-        response += f"> {index + 1}\n"\
-                    f"> Part number:{kb['pn']}\n" \
-                    f"> Name: {kb['name']}\n" \
-                    f"> Shorthand: {kb['shorthand']}\n" \
-                    f"> Layout: {kb['layout']}\n" \
-                    f"> Date First Seen: {kb['date']}\n" \ 
+        response += f"> {index + 1}\n" \
+                    f"> _Part number_: {kb['pn']}\n" \
+                    f"> _Name_: {kb['name']}\n" \
+                    f"> _Shorthand_: {kb['shorthand']}\n" \
+                    f"> _Layout_: {kb['layout']}\n" \
+                    f"> _Date First Seen_: {kb['date']}\n" \
                     f"\n"
 
     # send it off!
