@@ -138,7 +138,7 @@ async def poll(context, *args):
 
 @bot.command(name='kbdb')
 async def query_kb_db(context, part_num=None):
-    """Query SharktasticA's model M keyboard database by part number"""
+    """Query SharktasticA's IBM keyboard database by part number"""
     # Make sure the user has entered a part number
     if part_num is None:
         await context.send("ERROR: No keyboard part number provided.")
@@ -213,7 +213,10 @@ async def query_kb_db(context, part_num=None):
 
 @bot.command(name='kbsearch')
 async def search_kb_db(context, *args):
-    """Search SharktasticA's model M keyboard database"""
+    """
+    Search SharktasticA's IBM keyboard database.
+    To learn how to search efficiently, see https://sharktastica.co.uk/kb_db_help.php#SearchingGuide
+    """
 
     # The query is the first argument given
     # (Shark's database takes care of figuring out
@@ -244,14 +247,19 @@ async def search_kb_db(context, *args):
     # Build the response
     response = f"Here's what I found for _{query}_:\n"
 
+    # Iterate through each keyboard in result.
     for index, kb in enumerate(result):
-        response += f"> {index + 1}\n" \
+        response += f"> {index + 1}:\n" \
                     f"> _Part number_: {kb['pn']}\n" \
                     f"> _Name_: {kb['name']}\n" \
                     f"> _Shorthand_: {kb['shorthand']}\n" \
                     f"> _Layout_: {kb['layout']}\n" \
                     f"> _Date First Seen_: {kb['date']}\n" \
                     f"\n"
+
+    response += "You can type `!kbdb [part number]` to find out more!\n" \
+                '\n' \
+                'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
 
     # send it off!
     await context.send(response)
