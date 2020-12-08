@@ -213,7 +213,22 @@ async def query_kb_db(context, part_num=None):
 @bot.command(name='kbsearch')
 async def search_kb_db(context, *args):
     """Search SharktasticA's model M keyboard database"""
-    await context.send(context.message.content)
+    if context.message.content.count('"') == 2:
+        # Literal search
+        await context.send("Literal search")
+        await context.send(args[0])
+
+    elif context.message.content.count(',') > 0:
+        # Tag search
+        await context.send("Tag search")
+
+    elif context.message.content.count(';') > 0:
+        # Refined search
+        await context.send("Refined search")
+
+    else:
+        await context.send("I don't know how to search for that.")
+
 
 
 @bot.command(name='quote')
