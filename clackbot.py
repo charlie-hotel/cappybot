@@ -344,7 +344,7 @@ async def get_quote(context, *args):
 
 # Add a quote with !addquote
 @bot.command(name='addquote')
-async def del_quote(context, *args):
+async def add_quote(context, *args):
     print(context.message.content)
 
     raw_quote = None
