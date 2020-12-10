@@ -357,6 +357,7 @@ async def add_quote(context, *args):
             quoted_user_id = context.message.reference.cached_message.author.id
 
     if raw_quote is None:
+        await context.send("No text found in the message you replied to. Please try again with a different message.")
         return
 
     # Split up the raw quote by linefeed
@@ -382,6 +383,7 @@ async def add_quote(context, *args):
 
     if not quote['quote']:
         await context.send("No text found in the message you replied to. Please try again with a different message.")
+        return
 
     # Submit to the database
     headers = {'Content-type': 'application/json'}
