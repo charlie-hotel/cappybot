@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = "0.6"
+VERSION_NUMBER = "0.6.1"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -232,6 +232,12 @@ async def search_kb_db(context, *args):
 
     # Handle situation where no results are returned
     if result['success'] is False:
+        message = f'ERROR: Could not find "{query}" in database.'
+        await context.send(message)
+        return
+
+    # Handle other situation where no results are returned
+    if result['hits'] == 0:
         message = f'ERROR: Could not find "{query}" in database.'
         await context.send(message)
         return
