@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = "0.6.1"
+VERSION_NUMBER = "0.7"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -232,13 +232,13 @@ async def search_kb_db(context, *args):
 
     # Handle situation where no results are returned
     if result['success'] is False:
-        message = f'ERROR: Could not find "{query}" in database.'
+        message = f'ERROR: {result["message"]}'
         await context.send(message)
         return
 
     # Handle other situation where no results are returned
     if result['hits'] == 0:
-        message = f'ERROR: Could not find "{query}" in database.'
+        message = f'ERROR: No results for _{query}_ in database.'
         await context.send(message)
         return
 
@@ -342,6 +342,107 @@ async def get_quote(context, *args):
     await message.add_reaction(emoji_unicode)
 
 
+# Add a quote with !addquote
+@bot.command(name='addquote')
+async def del_quote(context, *args):
+    print(context.message.content)
+
+    raw_quote = None
+    quoted_user_id = None
+
+    if context.message.reference:
+        if context.message.reference.cached_message:
+            print(context.message.reference.cached_message.content)
+            raw_quote = context.message.reference.cached_message.content
+            quoted_user_id = context.message.reference.cached_message.author.id
+
+    if raw_quote is None:
+        return
+
+    # Split up the raw quote by linefeed
+    split_quote = raw_quote.split('\n')
+
+    # Build the quote object we will submit to the database
+    quote = {}
+    quote['added_by'] = {}
+    quote['added_by']['id'] = context.message.author.id
+    quote['added_by']['handle'] = context.message.author.name
+    quote['added_by']['discriminator'] = int(context.message.author.discriminator)
+
+    quoted_user = bot.get_user(quoted_user_id)
+    quote['said_by'] = {}
+    quote['said_by']['id'] = quoted_user.id
+    quote['said_by']['handle'] = quoted_user.name
+    quote['said_by']['discriminator'] = int(quoted_user.discriminator)
+
+    quote['quote'] = []
+    for line in split_quote:
+        if line != "":
+            quote['quote'].append(line)
+
+    # Submit to the database
+    headers = {'Content-type': 'application/json'}
+    response = requests.post(f'http://{API_HOST}/addquote', json=quote, headers=headers)
+
+    # Was the quote added successfully?
+    if response.status_code != 201:
+        await context.send("Something went wrong adding your quote.")
+        return
+
+    # Decode response into python object
+    response = response.json()
+
+    # Is the response a valid uuid?
+    try:
+        UUID(response['id'], version=4)
+    except ValueError:
+        # If not, failure.
+        await context.send("Something went wrong adding your quote.")
+        return
+
+    # If so, success!
+
+    # Rebuild the quote
+    rebuilt_quote = ""
+    for line in quote['quote']:
+        rebuilt_quote += '> ' + line + '\n'
+
+    rebuilt_quote += "said by <@!" + str(quote['said_by']['id']) + ">\n"
+    rebuilt_quote += "added by <@!" + str(quote['added_by']['id']) + ">\n"
+    rebuilt_quote += "id " + response['id'] + "\n"
+    rebuilt_quote += "score: 0"
+
+    # Send the quote to channel and make note of the message ID
+    # so that voting buttons can be added
+    quote_message = await context.send(rebuilt_quote)
+    params = {"message_id": quote_message.id,
+              "quote_id": response['id']}
+
+    # Prepare quote for voting
+    response = requests.get(f'http://{API_HOST}/addvotemessage', params=params, headers=headers)
+
+    if response.status_code != 201:
+        print(response.status_code)
+        print(response.content)
+        await context.send("Something went wrong preparing this quote for voting.")
+        return
+
+    # add voting buttons
+    emoji_desc = ':up_arrow:'
+    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    await quote_message.add_reaction(emoji_unicode)
+
+    emoji_desc = ':down_arrow:'
+    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    await quote_message.add_reaction(emoji_unicode)
+
+    emoji_desc = ':keycap_0:'
+    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    await quote_message.add_reaction(emoji_unicode)
+
+    return
+
+
 @bot.command(name='delquote')
 async def del_quote(context, *args):
     """Delete a quote from the database."""
@@ -393,7 +494,6 @@ async def del_quote(context, *args):
         return
 
 
-# Add a quote with !addquote
 @bot.event
 async def on_message(message):
     """Examine messages to see whether they meet the syntax for adding a quote"""
@@ -401,98 +501,99 @@ async def on_message(message):
     # If the following isn't run, then this event sucks up all commands and doesn't let them run (thanks, discord.py?)
     await bot.process_commands(message)
 
-    # TODO: there has to be a way to do this whole match-and-find-repeated-subsequences thing with one operation instead
-    # of all the lines that follow
-    match = re.match(r'^(>\s.+\n)<@!(\d+)>\s+!addquote$', message.content, re.DOTALL)
-
-    if not match:
-        return
-
-    # match group 0 is the quote content, match group 1 is the user being quoted
-    raw_quote = match.groups()[0]
-    quoted_user_id = int(match.groups()[1])
-
-    # split up the raw quote by linefeed
-    split_quote = raw_quote.split('\n')
-
-    # remove the last item if it is an empty string
-    if split_quote[-1] == "":
-        split_quote.pop()
-
-    # Build the quote object we will submit to the database
-    quote = {}
-    quote['added_by'] = {}
-    quote['added_by']['id'] = message.author.id
-    quote['added_by']['handle'] = message.author.name
-    quote['added_by']['discriminator'] = int(message.author.discriminator)
-
-    quoted_user = bot.get_user(quoted_user_id)
-    quote['said_by'] = {}
-    quote['said_by']['id'] = quoted_user.id
-    quote['said_by']['handle'] = quoted_user.name
-    quote['said_by']['discriminator'] = int(quoted_user.discriminator)
-
-    quote['quote'] = []
-    for line in split_quote:
-        quote['quote'].append(line[2:])
-
-    # Submit to the database
-    headers = {'Content-type': 'application/json'}
-    response = requests.post(f'http://{API_HOST}/addquote', json=quote, headers=headers)
-
-    # Did the quote get added successfully?
-    if response.status_code != 201:
-        await message.channel.send("Something went wrong adding your quote.")
-        return
-
-    response = response.json()
-
-    # Is the response a valid uuid?
-    try:
-        UUID(response['id'], version=4)
-    except ValueError:
-        # If not, failure.
-        await message.channel.send("Something went wrong adding your quote.")
-        return
-
-    rebuilt_quote = ""
-    # if so, success!
-    for line in quote['quote']:
-        rebuilt_quote += '> ' + line + '\n'
-
-    rebuilt_quote += "said by <@!" + str(quote['said_by']['id']) + ">\n"
-    rebuilt_quote += "added by <@!" + str(quote['added_by']['id']) + ">\n"
-    rebuilt_quote += "id " + response['id'] + "\n"
-    rebuilt_quote += "score: 0"
-
-    quote_message = await message.channel.send(rebuilt_quote)
-
-    # make note of the message id to track voting
-    params = {"message_id": quote_message.id,
-              "quote_id": response['id']}
-    print(params)
-    response = requests.get(f'http://{API_HOST}/addvotemessage', params=params, headers=headers)
-
-    if response.status_code != 201:
-        print(response.status_code)
-        print(response.content)
-        await message.channel.send("Something went wrong preparing this quote for voting.")
-        return
-
-    # add voting buttons
-    emoji_desc = ':up_arrow:'
-    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
-    await quote_message.add_reaction(emoji_unicode)
-
-    emoji_desc = ':down_arrow:'
-    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
-    await quote_message.add_reaction(emoji_unicode)
-
-    emoji_desc = ':keycap_0:'
-    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
-    await quote_message.add_reaction(emoji_unicode)
-
-    return
+    # # TODO: there has to be a way to do this whole match-and-find-repeated-subsequences thing with one operation instead
+    # # of all the lines that follow
+    # match = re.match(r'^(>\s.+\n)<@!(\d+)>\s+!addquote$', message.content, re.DOTALL)
+    #
+    # if not match:
+    #     return
+    #
+    # # match group 0 is the quote content, match group 1 is the user being quoted
+    # raw_quote = match.groups()[0]
+    # quoted_user_id = int(match.groups()[1])
+    #
+    # # split up the raw quote by linefeed
+    # split_quote = raw_quote.split('\n')
+    #
+    # # remove the last item if it is an empty string
+    # if split_quote[-1] == "":
+    #     split_quote.pop()
+    #
+    # # Build the quote object we will submit to the database
+    # quote = {}
+    # quote['added_by'] = {}
+    # quote['added_by']['id'] = message.author.id
+    # quote['added_by']['handle'] = message.author.name
+    # quote['added_by']['discriminator'] = int(message.author.discriminator)
+    #
+    # quoted_user = bot.get_user(quoted_user_id)
+    # quote['said_by'] = {}
+    # quote['said_by']['id'] = quoted_user.id
+    # quote['said_by']['handle'] = quoted_user.name
+    # quote['said_by']['discriminator'] = int(quoted_user.discriminator)
+    #
+    # quote['quote'] = []
+    # for line in split_quote:
+    #     quote['quote'].append(line[2:])
+    #
+    # # Submit to the database
+    # headers = {'Content-type': 'application/json'}
+    # response = requests.post(f'http://{API_HOST}/addquote', json=quote, headers=headers)
+    #
+    # # Did the quote get added successfully?
+    # if response.status_code != 201:
+    #     await message.channel.send("Something went wrong adding your quote.")
+    #     return
+    #
+    # response = response.json()
+    #
+    # # Is the response a valid uuid?
+    # try:
+    #     UUID(response['id'], version=4)
+    # except ValueError:
+    #     # If not, failure.
+    #     await message.channel.send("Something went wrong adding your quote.")
+    #     return
+    #
+    # rebuilt_quote = ""
+    #
+    # # if so, success!
+    # for line in quote['quote']:
+    #     rebuilt_quote += '> ' + line + '\n'
+    #
+    # rebuilt_quote += "said by <@!" + str(quote['said_by']['id']) + ">\n"
+    # rebuilt_quote += "added by <@!" + str(quote['added_by']['id']) + ">\n"
+    # rebuilt_quote += "id " + response['id'] + "\n"
+    # rebuilt_quote += "score: 0"
+    #
+    # quote_message = await message.channel.send(rebuilt_quote)
+    #
+    # # make note of the message id to track voting
+    # params = {"message_id": quote_message.id,
+    #           "quote_id": response['id']}
+    # print(params)
+    # response = requests.get(f'http://{API_HOST}/addvotemessage', params=params, headers=headers)
+    #
+    # if response.status_code != 201:
+    #     print(response.status_code)
+    #     print(response.content)
+    #     await message.channel.send("Something went wrong preparing this quote for voting.")
+    #     return
+    #
+    # # add voting buttons
+    # emoji_desc = ':up_arrow:'
+    # emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    # await quote_message.add_reaction(emoji_unicode)
+    #
+    # emoji_desc = ':down_arrow:'
+    # emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    # await quote_message.add_reaction(emoji_unicode)
+    #
+    # emoji_desc = ':keycap_0:'
+    # emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
+    # await quote_message.add_reaction(emoji_unicode)
+    #
+    # return
 
 
 @bot.event
