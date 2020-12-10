@@ -380,6 +380,9 @@ async def add_quote(context, *args):
         if line != "":
             quote['quote'].append(line)
 
+    if not quote['quote']:
+        await context.send("No text found in the message you replied to. Please try again with a different message.")
+
     # Submit to the database
     headers = {'Content-type': 'application/json'}
     response = requests.post(f'http://{API_HOST}/addquote', json=quote, headers=headers)
