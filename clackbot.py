@@ -345,14 +345,14 @@ async def get_quote(context, *args):
 # Add a quote with !addquote
 @bot.command(name='addquote')
 async def add_quote(context, *args):
-    print(context.message.content)
+    """Add a quote to the quote DB. Simply reply to a message you want to quote, then type !addquote and press enter.
+    !addquote must be at the start of the first line of your reply."""
 
     raw_quote = None
     quoted_user_id = None
 
     if context.message.reference:
         if context.message.reference.cached_message:
-            print(context.message.reference.cached_message.content)
             raw_quote = context.message.reference.cached_message.content
             quoted_user_id = context.message.reference.cached_message.author.id
 

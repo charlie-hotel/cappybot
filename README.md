@@ -21,7 +21,7 @@ Be sure to quote your question and answers, or each word will be counted separat
 
 ### Quotes
 #### Adding quotes
-It's easy to add discord quotes to clackbot. Simply quote a user normally using discord's quote function, then type
+It's easy to add discord quotes to clackbot. Simply reply to the message you want to add as a quote, then type
 
     !addquote
 
