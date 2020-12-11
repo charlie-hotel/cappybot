@@ -225,7 +225,7 @@ async def search_kb_db(context, *args):
     await context.send(f"Searching for _{query}_. Just a moment...")
 
     # display the 'typing' indicator while searching for user's query
-    async with channel.typing():
+    async with context.channel.typing():
         # Query the DB
         result = requests.get(url)
 
