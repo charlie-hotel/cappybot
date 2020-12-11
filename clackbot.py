@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = "0.7"
+VERSION_NUMBER = "0.7.1"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -224,51 +224,53 @@ async def search_kb_db(context, *args):
     # indicate to the user that something is happening.
     await context.send(f"Searching for _{query}_. Just a moment...")
 
-    # Query the DB
-    result = requests.get(url)
+    # display the 'typing' indicator while searching for user's query
+    async with channel.typing():
+        # Query the DB
+        result = requests.get(url)
 
-    # Convert JSON into a python data structure
-    result = result.json()
+        # Convert JSON into a python data structure
+        result = result.json()
 
-    # Handle situation where no results are returned
-    if result['success'] is False:
-        message = f'ERROR: {result["message"]}'
-        await context.send(message)
-        return
+        # Handle situation where no results are returned
+        if result['success'] is False:
+            message = f'ERROR: {result["message"]}'
+            await context.send(message)
+            return
 
-    # Handle other situation where no results are returned
-    if result['hits'] == 0:
-        message = f'ERROR: No results for _{query}_ in database.'
-        await context.send(message)
-        return
+        # Handle other situation where no results are returned
+        if result['hits'] == 0:
+            message = f'ERROR: No results for _{query}_ in database.'
+            await context.send(message)
+            return
 
-    # Build the response
-    response = f"Here's what I found for _{query}_:\n"
+        # Build the response
+        response = f"Here's what I found for _{query}_:\n"
 
-    hits = result['hits']
+        hits = result['hits']
 
-    # Iterate through each keyboard in result.
-    for index, kb in enumerate(result['results']):
-        hits -= 1
-        response += f"> {index + 1}:\n" \
-                    f"> _Part number_: {kb['pn']}\n" \
-                    f"> _Name_: {kb['name']}\n" \
-                    f"> _Shorthand_: {kb['shorthand']}\n" \
-                    f"> _Layout_: {kb['layout']}\n" \
-                    f"> _Date First Seen_: {kb['date']}\n" \
-                    f"\n"
+        # Iterate through each keyboard in result.
+        for index, kb in enumerate(result['results']):
+            hits -= 1
+            response += f"> {index + 1}:\n" \
+                        f"> _Part number_: {kb['pn']}\n" \
+                        f"> _Name_: {kb['name']}\n" \
+                        f"> _Shorthand_: {kb['shorthand']}\n" \
+                        f"> _Layout_: {kb['layout']}\n" \
+                        f"> _Date First Seen_: {kb['date']}\n" \
+                        f"\n"
 
-    if hits > 0:
-        response += f'Plus an additional {hits} results.\n\n'
+        if hits > 0:
+            response += f'Plus an additional {hits} results.\n\n'
 
-    response += "You can type `!kbdb [part number]` to find out more about a specific keyboard.\n"
-    await context.send(response)
+        response += "You can type `!kbdb [part number]` to find out more about a specific keyboard.\n"
+        await context.send(response)
 
-    response = 'To learn how to search efficiently, see https://sharktastica.co.uk/kb_db_help.php#SearchingGuide'
-    await context.send(response)
+        response = 'To learn how to search efficiently, see https://sharktastica.co.uk/kb_db_help.php#SearchingGuide'
+        await context.send(response)
 
-    response = 'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
-    await context.send(response)
+        response = 'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
+        await context.send(response)
 
 
 @bot.command(name='quote')
@@ -319,12 +321,9 @@ async def get_quote(context, *args):
     # make note of the message id to track voting
     params = {"message_id": message.id,
               "quote_id": quote['id']}
-    print(params)
     response = requests.get(f'http://{API_HOST}/addvotemessage', params=params, headers=headers)
 
     if response.status_code != 201:
-        print(response.status_code)
-        print(response.content)
         await context.send("Something went wrong preparing this quote for voting.")
         return
 
@@ -427,8 +426,6 @@ async def add_quote(context, *args):
     response = requests.get(f'http://{API_HOST}/addvotemessage', params=params, headers=headers)
 
     if response.status_code != 201:
-        print(response.status_code)
-        print(response.content)
         await context.send("Something went wrong preparing this quote for voting.")
         return
 
@@ -472,8 +469,6 @@ async def del_quote(context, *args):
     headers = {'Content-type': 'application/json'}
     response = requests.get(f'http://{API_HOST}/getquote', params=params, headers=headers)
 
-    print(response.json())
-
     quote = response.json()
 
     if 'added_by' not in quote:
@@ -509,7 +504,6 @@ async def on_raw_reaction_add(payload):
 
     # Convert emoji into something pronounceable
     emoji_name = emoji.demojize(str(payload.emoji))
-    print(emoji_name)
 
     # If it's not an upvote, a downvote, or a 0 vote, ignore it
     allowed_emoji = [':up_arrow:', ':down_arrow:', ':keycap_0:']
@@ -536,6 +530,7 @@ async def on_raw_reaction_add(payload):
     response = requests.post(f'http://{API_HOST}/vote', json=ballot, headers=headers)
 
     if response.status_code != 201:
+        # TODO: respond with real error message
         print(f"error recording vote for {ballot['voter_id']['handle']} ({ballot['voter_id']['id']})")
         print(response.content)
 
