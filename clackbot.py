@@ -531,9 +531,9 @@ async def on_raw_reaction_add(payload):
 
     if response.status_code != 201:
         # TODO: respond with real error message
+        await payload.member.send("Your vote was not recorded due to an error. Please contact the bot wrangler.")
         print(f"error recording vote for {ballot['voter_id']['handle']} ({ballot['voter_id']['id']})")
         print(response.content)
-
     return
 
 
