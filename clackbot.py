@@ -186,7 +186,7 @@ async def query_kb_db(context, part_num=None):
     result = result.json()
 
     # Handle situation where no results are returned
-    if result['success'] is False:
+    if result['hits'] == 0:
         message = f"ERROR: Part number {part_num} not found in database.\n"
         message += "Would you like to add it to the database? Just visit\n"
         message += f"https://sharktastica.co.uk/kb_db_sub.php?pn={part_num}"
@@ -531,7 +531,6 @@ async def on_raw_reaction_add(payload):
 
     if response.status_code != 201:
         # TODO: respond with real error message
-        await payload.member.send("Your vote was not recorded due to an error. Please contact the bot wrangler.")
         print(f"error recording vote for {ballot['voter_id']['handle']} ({ballot['voter_id']['id']})")
         print(response.content)
     return
