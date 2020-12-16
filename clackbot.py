@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = "0.7.2"
+VERSION_NUMBER = "0.7.3"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -193,12 +193,16 @@ async def query_kb_db(context, part_num=None):
         await context.send(message)
         return
 
+
     # Build the response
-    response = f"Here's what I found about part {part_num}:\n"
+    response = f"Here's what I found about part {part_num}:\n\n"
     for kb in result['results']:
+        link = kb.pop('link', None)
         for key in kb.keys():
             if kb[key] is not None:
                 response += f'**{fields_dict[key]}:** {kb[key]}\n'
+        if link is not None:
+            response += f'\n**Permalink:** <{link}>\n'
     response += '\n'
     response += 'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
 
