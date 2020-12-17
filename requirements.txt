@@ -6,3 +6,4 @@ discord
 emoji
 PyNaCl
 requests
+frogtips
