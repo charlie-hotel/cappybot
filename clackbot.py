@@ -2,15 +2,15 @@ import discord
 import emoji
 import os
 import random
-import re
 import requests
 
 from discord.ext import commands
 from dotenv import load_dotenv
+from frogtips import api as frogtips_api
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = "0.7.3"
+VERSION_NUMBER = "0.8"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -134,6 +134,22 @@ async def poll(context, *args):
         emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
 
         await message.add_reaction(emoji_unicode)
+
+
+@bot.command(name='frogtip')
+async def frog_tip(context, tip_id=None):
+    """Display a FROG Tip"""
+    if tip_id is None:
+        tip = frogtips_api.Tips().get_next_tip()
+    else:
+        tip_id = int(tip_id)
+        tip = frogtips_api.Tip(tip_id)
+
+    formatted_tip = tip.get_formatted_tip()
+    formatted_tip += '\n'
+    formatted_tip += "https://frog.tips/#" + str(tip.get_id())
+
+    await context.send(formatted_tip)
 
 
 @bot.command(name='kbdb')
