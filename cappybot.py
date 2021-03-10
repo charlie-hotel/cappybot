@@ -27,7 +27,7 @@ bot = commands.Bot(command_prefix='!')
 @bot.command(name='version')
 async def say_version(context):
     """Display cappybot version information."""
-    await context.send(f'cappybot {VERSION_NUMBER} © 2021 <@!232598411654725633>')
+    await context.send(f'cappybot {VERSION_NUMBER} 2021 <@!232598411654725633>')
 
 
 @bot.command(name='source')
