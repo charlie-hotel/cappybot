@@ -13,9 +13,9 @@ from uuid import UUID
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.7"
+VERSION_NUMBER = "0.8.8"
 SHARK_UID = "<@!232598411654725633>"
-DOOP_UID = "<@!572963354902134787"
+DOOP_UID = "<@!572963354902134787>"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -34,6 +34,9 @@ bot = commands.Bot(('?', '!k'))
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send('```ERROR: Command not found - please use the ?help command to find out what commands are supported.```')
+        return
+    else:
+        var_dump(error)
         return
     raise error
 
@@ -65,11 +68,21 @@ async def dt(cxt, query=None):
 
     # Assemble components for a MediaWiki search request
     URL = "https://deskthority.net/wiki/api.php"
-    PARAMS = {
+    TITLE_PARAMS = {
         "action": "query",
         "format": "json",
         "list": "search",
-        "srsearch": query
+        "srwhat": "title",
+        "srsearch": query,
+        "utf8": "",
+    }
+    TEXT_PARAMS = {
+        "action": "query",
+        "format": "json",
+        "list": "search",
+        "srwhat": "text",
+        "srsearch": query,
+        "utf8": "",
     }
 
     # Because the query takes a long time to run,
@@ -78,19 +91,38 @@ async def dt(cxt, query=None):
 
     # display the 'typing' indicator while searching for user's query
     async with cxt.channel.typing():
-        # Query the DB
-        req = requests.get(url=URL, params=PARAMS)
+        # Get title search results
+        req_title = requests.get(url=URL, params=TITLE_PARAMS)
+        rsts_title = req_title.json()
 
-        # Convert JSON into a python data structure
-        rsts = req.json()
+        # Get text search results
+        req_text = requests.get(url=URL, params=TEXT_PARAMS)
+        rsts_text = req_text.json()
             
         # Get number of hits
-        hits = rsts["query"]["searchinfo"]["totalhits"]
+        hits = rsts_title["query"]["searchinfo"]["totalhits"] + rsts_text["query"]["searchinfo"]["totalhits"]
+
+        if hits == 0:
+            message = f'No results for _{query}_ found.'
+            await cxt.send(message)
+            return
 
         # Output results
-        response = f"Here's what I found for _{query}_:\n"
+        response = f"Here's the page **title** matches I found for _{query}_:\n"
         c = 5
-        for i, page in enumerate(rsts["query"]["search"]):
+        for i, page in enumerate(rsts_title["query"]["search"]):
+            if (c == 0):
+                break
+            c -= 1
+            hits -= 1
+            response += f"> **{i + 1}:** " \
+                        f" {page['title']}, " \
+                        f" {page['wordcount']} words, " \
+                        f" <https://deskthority.net/wiki/{page['title'].replace(' ', '_')}>\n" \
+        
+        response += f"Here's the page **text** matches I found for _{query}_:\n"
+        c = 5
+        for i, page in enumerate(rsts_text["query"]["search"]):
             if (c == 0):
                 break
             c -= 1
@@ -101,7 +133,7 @@ async def dt(cxt, query=None):
                         f" <https://deskthority.net/wiki/{page['title'].replace(' ', '_')}>\n" \
 
         if hits > 0:
-            response += f'Plus an additional {hits} results.\n\n'
+            response += f'\nPlus an additional {hits} results you can see by going to <https://deskthority.net/wiki/index.php?search={query.replace(" ", "+")}&title=Special%3ASearch&fulltext=1>.'
         
         await cxt.send(response)
 
@@ -286,7 +318,7 @@ async def kbsearch(cxt, *args):
 
         # Handle other situation where no results are returned
         if result['hits'] == 0:
-            message = f'No results for _{query}_ in database.'
+            message = f'No results for _{query}_ found.'
             await cxt.send(message)
             return
 
@@ -306,15 +338,9 @@ async def kbsearch(cxt, *args):
                         f" {kb['date']}\n" \
 
         if hits > 0:
-            response += f'Plus an additional {hits} results.\n\n'
+            response += f'\nPlus an additional {hits} results.\n\n'
 
-        response += "You can type `?kbpn [part number]` to find out more about a specific keyboard.\n"
-        await cxt.send(response)
-
-        response = 'To learn how to search efficiently, see <https://sharktastica.co.uk/kb_db_help.php#SearchingGuide>'
-        await cxt.send(response)
-
-        response = 'Learn about where this data came from: <https://sharktastica.co.uk/about.php#Sources>'
+        response += "You can type `?kbpn [part number]` to find out more about a specific keyboard. To learn how to search efficiently, see <https://sharktastica.co.uk/kb_db_help.php#SearchingGuide>. Learn about where this data came from, see <https://sharktastica.co.uk/about.php#Sources>"
         await cxt.send(response)
 
 
