@@ -11,7 +11,7 @@ from frogtips import api as frogtips_api
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = "0.8.2"
+VERSION_NUMBER = "0.8.4"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,15 +25,15 @@ bot = commands.Bot(command_prefix='?')
 
 # Link source repo command
 @bot.command(pass_context = True, aliases=['src'])
-async def source(context):
+async def source(cxt):
     """Gives a link to cappybot's GitHub repo"""
-    await context.send(f'https://github.com/SharktallicA/cappybot')
+    await cxt.send(f'https://github.com/SharktallicA/cappybot')
 
 # Display version command
 @bot.command(pass_context = True, aliases=['ver'])
-async def version(context):
+async def version(cxt):
     """Displays cappybot's version number"""
-    await context.send(f'cappybot {VERSION_NUMBER} by <@!232598411654725633> (based on clackbot 0.8 by <@!572963354902134787>)')
+    await cxt.send(f'cappybot {VERSION_NUMBER} by <@!232598411654725633> (based on clackbot 0.8 by <@!572963354902134787>)')
 
 @bot.event
 async def on_command_error(ctx, error):
