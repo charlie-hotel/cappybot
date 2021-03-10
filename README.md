@@ -16,16 +16,18 @@ cappybot looks for a .env file containing a Discord API token in the format:
     DISCORD_TOKEN=your_token_here
 
 ### Running cappybot
-Simply run:
+Windows:
+
+    py cappybot.py
+Linux:
 
     python3 cappybot.py
 
-...and cappybot will run provided you have set the appropriate API token as detailed above.
-
 ## Commands
 cappybot uses '?' as its command prefix. List of current commands:
-* ?kbfru - Queries SharktasticA's IBM and co keyboard database by FRU number
-* ?kbpn - Queries SharktasticA's IBM and co keyboard database by part number (aliases: ?kbdb, !kbdb)
-* ?kbsearch - Searches SharktasticA's IBM and co keyboard database with given query (aliases: !kbsearch)
+* ?dt - Searches deskthority wiki with given query (PRESENTLY ONLY SINGLE-TERM USAGE)
+* ?kbfru - Queries Admiral Shark's Keebs keyboard database by FRU number
+* ?kbpn - Queries Admiral Shark's Keebs keyboard database by part number (aliases: ?kbdb, !kbdb)
+* ?kbsearch - Searches Admiral Shark's Keebs keyboard database with given query (aliases: !kbsearch)
 * ?source - gives a link to cappybot's GitHub repo (aliases: ?src)
 * ?version - displays cappybot's version number (aliases: ?ver)

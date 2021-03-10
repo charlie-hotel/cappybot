@@ -4,14 +4,16 @@ import os
 import random
 import requests
 
+from var_dump import var_dump
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 from dotenv import load_dotenv
 from frogtips import api as frogtips_api
 from uuid import UUID
+from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.6"
+VERSION_NUMBER = "0.8.7"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787"
 
@@ -51,12 +53,63 @@ async def version(cxt):
 
 
 
+# deskthority wiki search command
+@bot.command(pass_context = True)
+async def dt(cxt, query=None):
+    """Searches deskthority wiki with given query"""
+
+    # Make sure the user has entered a query
+    if query is None:
+        await cxt.send("```ERROR: no or invalid query provided.```")
+        return
+
+    # Assemble components for a MediaWiki search request
+    URL = "https://deskthority.net/wiki/api.php"
+    PARAMS = {
+        "action": "query",
+        "format": "json",
+        "list": "search",
+        "srsearch": query
+    }
+
+    # Because the query takes a long time to run,
+    # indicate to the user that something is happening.
+    await cxt.send(f"Searching deskthority wiki for _{query}_. Just a moment...")
+
+    # display the 'typing' indicator while searching for user's query
+    async with cxt.channel.typing():
+        # Query the DB
+        req = requests.get(url=URL, params=PARAMS)
+
+        # Convert JSON into a python data structure
+        rsts = req.json()
+            
+        # Get number of hits
+        hits = rsts["query"]["searchinfo"]["totalhits"]
+
+        # Output results
+        response = f"Here's what I found for _{query}_:\n"
+        c = 5
+        for i, page in enumerate(rsts["query"]["search"]):
+            if (c == 0):
+                break
+            c -= 1
+            hits -= 1
+            response += f"> **{i + 1}:** " \
+                        f" {page['title']}, " \
+                        f" {page['wordcount']} words, " \
+                        f" <https://deskthority.net/wiki/{page['title'].replace(' ', '_')}>\n" \
+
+        if hits > 0:
+            response += f'Plus an additional {hits} results.\n\n'
+        
+        await cxt.send(response)
 
 # FRU number keyboard search command
 @bot.command(pass_context = True)
 async def kbfru(cxt, fru_num=None):
-    """Queries SharktasticA's IBM and co keyboard database by FRU number"""
-    # Make sure the user has entered a part number
+    """Queries Admiral Shark's Keebs keyboard database by FRU number"""
+    # Make sure the user has entered a FRU number
     if fru_num is None:
         await cxt.send("```ERROR: no or invalid FRU number provided.```")
         return
@@ -128,7 +181,7 @@ async def kbfru(cxt, fru_num=None):
 # Part number keyboard search command
 @bot.command(pass_context = True, aliases=['kbdb', 'bdb'])
 async def kbpn(cxt, part_num=None):
-    """Queries SharktasticA's IBM and co keyboard database by part number"""
+    """Queries Admiral Shark's Keebs keyboard database by part number"""
     # Make sure the user has entered a part number
     if part_num is None:
         await cxt.send("```ERROR: no or invalid part number provided.```")
@@ -198,9 +251,10 @@ async def kbpn(cxt, part_num=None):
     # aaand send it off!
     await cxt.send(response)
 
+# General keyboard search command
 @bot.command(pass_context = True, aliases=['bsearch'])
 async def kbsearch(cxt, *args):
-    """Searches SharktasticA's IBM and co keyboard database with given query"""
+    """Searches Admiral Shark's Keebs keyboard database with given query"""
 
     # The query is the first argument given
     # (Shark's database takes care of figuring out
@@ -214,7 +268,7 @@ async def kbsearch(cxt, *args):
 
     # Because the query takes a long time to run,
     # indicate to the user that something is happening.
-    await cxt.send(f"Searching for _{query}_. Just a moment...")
+    await cxt.send(f"Searching Admiral Shark's Keebs for _{query}_. Just a moment...")
 
     # display the 'typing' indicator while searching for user's query
     async with cxt.channel.typing():
@@ -262,6 +316,8 @@ async def kbsearch(cxt, *args):
 
         response = 'Learn about where this data came from: <https://sharktastica.co.uk/about.php#Sources>'
         await cxt.send(response)
+
+
 
 # run the bot
 bot.run(DISCORD_TOKEN)

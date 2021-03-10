@@ -7,3 +7,4 @@ emoji
 PyNaCl
 requests
 frogtips
+var_dump
