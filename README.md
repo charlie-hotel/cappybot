@@ -1,5 +1,5 @@
 # cappybot
-Shark's cappybot is my adaptation of doopqoob's (https://github.com/doopqoob) clackbot with community features removed (temporarily) but eventually featuring additional database functionality and tighter integration with my website (https://sharktastica.co.uk) and eventually deskthority wiki.
+Shark's cappybot is my adaptation of doopqoob's (https://github.com/doopqoob) clackbot with community features removed (temporarily) but eventually featuring additional database functionality and tighter integration with my website (https://sharktastica.co.uk) and deskthority wiki.
 
 ## Setting up
 
@@ -24,5 +24,7 @@ Simply run:
 
 ## Commands
 cappybot uses '?' as its command prefix. List of current commands:
-* source - gives a link to cappybot's GitHub repo (aliases: src)
-* version - displays cappybot's version number (aliases: ver)
+* ?kbfru - Queries SharktasticA's IBM and co keyboard database by FRU number
+* ?kbpn - Queries SharktasticA's IBM and co keyboard database by part number (aliases: ?kbdb, !kbdb)
+* ?source - gives a link to cappybot's GitHub repo (aliases: ?src)
+* ?version - displays cappybot's version number (aliases: ?ver)
