@@ -26,14 +26,14 @@ bot = commands.Bot(command_prefix='!')
 # Set up bot commands
 @bot.command(name='version')
 async def say_version(context):
-    """Display clackbot version information."""
-    await context.send(f'clackbot {VERSION_NUMBER} © 2020 <@!572963354902134787>')
+    """Display cappybot version information."""
+    await context.send(f'cappybot {VERSION_NUMBER} © 2020 <@!572963354902134787>')
 
 
 @bot.command(name='source')
 async def say_source_url(context):
-    """Display the link to clackbot's source code on GitHub."""
-    await context.send('https://github.com/doopqoob/clackbot')
+    """Display the link to cappybot's source code on GitHub."""
+    await context.send('https://github.com/doopqoob/cappybot')
 
 
 @bot.command(name='follow')
