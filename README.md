@@ -1,5 +1,5 @@
 # cappybot
-Shark's cappybot is my adaptation of doopqoob's (https://github.com/doopqoob) clackbot with community features removed (temporarily) but added database functionality and tighter integration with my website (https://sharktastica.co.uk) and eventually deskthority wiki.
+Shark's cappybot is my adaptation of doopqoob's (https://github.com/doopqoob) clackbot with community features removed (temporarily) but eventually featuring additional database functionality and tighter integration with my website (https://sharktastica.co.uk) and eventually deskthority wiki.
 
 ## Running cappybot
 
