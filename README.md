@@ -26,5 +26,6 @@ Simply run:
 cappybot uses '?' as its command prefix. List of current commands:
 * ?kbfru - Queries SharktasticA's IBM and co keyboard database by FRU number
 * ?kbpn - Queries SharktasticA's IBM and co keyboard database by part number (aliases: ?kbdb, !kbdb)
+* ?kbsearch - Searches SharktasticA's IBM and co keyboard database with given query (aliases: !kbsearch)
 * ?source - gives a link to cappybot's GitHub repo (aliases: ?src)
 * ?version - displays cappybot's version number (aliases: ?ver)
