@@ -10,7 +10,7 @@ from frogtips import api as frogtips_api
 from uuid import UUID
 
 # Set version number
-VERSION_NUMBER = "0.8"
+VERSION_NUMBER = "0.8.1"
 
 # Load environment variables from .env file
 load_dotenv()
@@ -27,13 +27,13 @@ bot = commands.Bot(command_prefix='!')
 @bot.command(name='version')
 async def say_version(context):
     """Display cappybot version information."""
-    await context.send(f'cappybot {VERSION_NUMBER} © 2020 <@!572963354902134787>')
+    await context.send(f'cappybot {VERSION_NUMBER} © 2021 <@!232598411654725633>')
 
 
 @bot.command(name='source')
 async def say_source_url(context):
     """Display the link to cappybot's source code on GitHub."""
-    await context.send('https://github.com/doopqoob/cappybot')
+    await context.send('https://github.com/SharktallicA/cappybot')
 
 
 @bot.command(name='follow')
@@ -291,228 +291,6 @@ async def search_kb_db(context, *args):
 
         response = 'Learn about where this data came from: https://sharktastica.co.uk/about.php#Sources'
         await context.send(response)
-
-
-@bot.command(name='quote')
-async def get_quote(context, *args):
-    """Get a quote from the database."""
-    # Get quote ID, if any, as first argument
-    quote_id = None
-    if len(args) == 1:
-        quote_id = args[0]
-
-    headers = {'Content-type': 'application/json'}
-    response = None
-    if quote_id:
-        # Validate input as a valid version 4 UUID before continuing
-        try:
-            UUID(quote_id, version=4)
-        except ValueError:
-            await context.send("Invalid quote ID")
-            return
-
-        # Get quote
-        params = {"id": quote_id}
-        response = requests.get(f'http://{API_HOST}/getquote', params=params, headers=headers)
-    else:
-        response = requests.get(f'http://{API_HOST}/getquote', headers=headers)
-
-    if response.status_code == 404:
-        await context.send("Quote not found")
-        return
-
-    # parse the JSON into a python object
-    quote = response.json()
-
-    # assemble the text we're going to send to discord
-    quote_text = ""
-
-    for line in quote['quote']:
-        quote_text += "> " + line + "\n"
-
-    quote_text += "said by <@!" + str(quote['said_by']['id']) + ">\n"
-    quote_text += "added " + quote['added_at'] + " by <@!" + str(quote['added_by']['id']) + ">\n"
-    quote_text += "id " + quote['id'] + "\n"
-    quote_text += "score: " + str(quote['score'])
-
-    # and send it off!
-    message = await context.send(quote_text)
-
-    # make note of the message id to track voting
-    params = {"message_id": message.id,
-              "quote_id": quote['id']}
-    response = requests.get(f'http://{API_HOST}/addvotemessage', params=params, headers=headers)
-
-    if response.status_code != 201:
-        await context.send("Something went wrong preparing this quote for voting.")
-        return
-
-    # add voting buttons
-    emoji_desc = ':up_arrow:'
-    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
-    await message.add_reaction(emoji_unicode)
-
-    emoji_desc = ':down_arrow:'
-    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
-    await message.add_reaction(emoji_unicode)
-
-    emoji_desc = ':keycap_0:'
-    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
-    await message.add_reaction(emoji_unicode)
-
-
-# Add a quote with !addquote
-@bot.command(name='addquote')
-async def add_quote(context, *args):
-    """Add a quote to the quote DB. Simply reply to a message you want to quote, then type !addquote and press enter.
-    !addquote must be at the start of the first line of your reply."""
-
-    raw_quote = None
-    quoted_user_id = None
-
-    if context.message.reference:
-        if context.message.reference.cached_message:
-            raw_quote = context.message.reference.cached_message.content
-            quoted_user_id = context.message.reference.cached_message.author.id
-
-    if raw_quote is None:
-        await context.send("No text found in the message you replied to. Please try again with a different message.")
-        return
-
-    # Split up the raw quote by linefeed
-    split_quote = raw_quote.split('\n')
-
-    # Build the quote object we will submit to the database
-    quote = {}
-    quote['added_by'] = {}
-    quote['added_by']['id'] = context.message.author.id
-    quote['added_by']['handle'] = context.message.author.name
-    quote['added_by']['discriminator'] = int(context.message.author.discriminator)
-
-    quoted_user = bot.get_user(quoted_user_id)
-    quote['said_by'] = {}
-    quote['said_by']['id'] = quoted_user.id
-    quote['said_by']['handle'] = quoted_user.name
-    quote['said_by']['discriminator'] = int(quoted_user.discriminator)
-
-    quote['quote'] = []
-    for line in split_quote:
-        if line != "":
-            quote['quote'].append(line)
-
-    if not quote['quote']:
-        await context.send("No text found in the message you replied to. Please try again with a different message.")
-        return
-
-    # Submit to the database
-    headers = {'Content-type': 'application/json'}
-    response = requests.post(f'http://{API_HOST}/addquote', json=quote, headers=headers)
-
-    # Was the quote added successfully?
-    if response.status_code != 201:
-        await context.send("Something went wrong adding your quote.")
-        return
-
-    # Decode response into python object
-    response = response.json()
-
-    # Is the response a valid uuid?
-    try:
-        UUID(response['id'], version=4)
-    except ValueError:
-        # If not, failure.
-        await context.send("Something went wrong adding your quote.")
-        return
-
-    # If so, success!
-
-    # Rebuild the quote
-    rebuilt_quote = ""
-    for line in quote['quote']:
-        rebuilt_quote += '> ' + line + '\n'
-
-    rebuilt_quote += "said by <@!" + str(quote['said_by']['id']) + ">\n"
-    rebuilt_quote += "added by <@!" + str(quote['added_by']['id']) + ">\n"
-    rebuilt_quote += "id " + response['id'] + "\n"
-    rebuilt_quote += "score: 0"
-
-    # Send the quote to channel and make note of the message ID
-    # so that voting buttons can be added
-    quote_message = await context.send(rebuilt_quote)
-    params = {"message_id": quote_message.id,
-              "quote_id": response['id']}
-
-    # Prepare quote for voting
-    response = requests.get(f'http://{API_HOST}/addvotemessage', params=params, headers=headers)
-
-    if response.status_code != 201:
-        await context.send("Something went wrong preparing this quote for voting.")
-        return
-
-    # add voting buttons
-    emoji_desc = ':up_arrow:'
-    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
-    await quote_message.add_reaction(emoji_unicode)
-
-    emoji_desc = ':down_arrow:'
-    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
-    await quote_message.add_reaction(emoji_unicode)
-
-    emoji_desc = ':keycap_0:'
-    emoji_unicode = emoji.emojize(emoji_desc, use_aliases=True)
-    await quote_message.add_reaction(emoji_unicode)
-
-    return
-
-
-@bot.command(name='delquote')
-async def del_quote(context, *args):
-    """Delete a quote from the database."""
-    # Get quote ID, if any, as first argument
-    quote_id = None
-    if len(args) == 1:
-        quote_id = args[0]
-
-    if not quote_id:
-        await context.send("You must provide a quote ID.")
-        return
-
-    # Validate input as a valid version 4 UUID before continuing
-    try:
-        UUID(quote_id, version=4)
-    except ValueError:
-        await context.send("Invalid quote ID")
-        return
-
-    # Get quote
-    params = {"id": quote_id}
-    headers = {'Content-type': 'application/json'}
-    response = requests.get(f'http://{API_HOST}/getquote', params=params, headers=headers)
-
-    quote = response.json()
-
-    if 'added_by' not in quote:
-        await context.send("Invalid quote ID")
-        return
-
-    # Make sure the user is authorized to delete the quote
-    # print(context.author.top_role.name)
-    if context.author.top_role.name != "Keyboard Lords":
-        if quote['added_by']['id'] != context.author.id and quote['said_by']['id'] != context.author.id:
-            await context.send("Only the person who submitted the quote, the person named in the quote, " +
-                               f"or an administrator may delete quote {quote_id}")
-            return
-
-    # Delete the quote
-    response = requests.get(f'http://{API_HOST}/delquote', params=params, headers=headers)
-
-    if response.status_code == 200:
-        await context.send("Successfully deleted quote " + quote_id)
-        return
-    else:
-        await context.send("Something went wrong deleting quote " + quote_id)
-        return
-
 
 @bot.event
 async def on_raw_reaction_add(payload):
