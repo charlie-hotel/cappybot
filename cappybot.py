@@ -12,7 +12,7 @@ from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.11"
+VERSION_NUMBER = "0.8.12"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -37,6 +37,12 @@ async def on_command_error(ctx, error):
     raise error
 
 
+
+# About cappybot command
+@bot.command(pass_context = True, aliases=['abt'])
+async def about(cxt):
+    """Displays cappybot's about page"""
+    await cxt.send(f"cappybot is a Discord bot tailored specifically for use on the r/ModelM and other Discord servers moderated by {SHARK_UID}. Based on {DOOP_UID}'s clackbot 0.8, this is a successor bot developed by {SHARK_UID} that integrates with Admiral Shark's Keebs website, deskthority wiki and the FCC database to provide keyboard lookup and research capabilities. Other planned features include r/ModelM, r/ModelF and r/MechanicalKeyboards subreddit searching, keyboard ASMR typing playback and some basic community features.")
 
 # Link source repo command
 @bot.command(pass_context = True, aliases=['src'])

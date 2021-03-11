@@ -4,7 +4,7 @@ Shark's cappybot is my adaptation of doopqoob's (https://github.com/doopqoob) cl
 ## Setting up
 
 ### Requirements
-cappybot should run on either Windows or Linux fine after installing the required pip packages: 
+cappybot should run on either Windows or Linux after installing Python 3 and several required pip packages. You can automate the installation of these packages by running the following command or checking out the `requirements.txt` file. 
 
     pip3 install -r requirements.txt
 
@@ -33,5 +33,6 @@ cappybot uses '?' as its command prefix.
 * ?kbpn - Queries Admiral Shark's Keebs keyboard database by part number (aliases: ?kbdb, !kbdb)
 * ?kbsearch - Searches Admiral Shark's Keebs keyboard database with given query (aliases: !kbsearch)
 ### Misc
+* ?about - displays cappybot's about page (aliases: ?abt)
 * ?source - gives a link to cappybot's GitHub repo (aliases: ?src)
 * ?version - displays cappybot's version number (aliases: ?ver)
