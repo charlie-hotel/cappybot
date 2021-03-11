@@ -3,8 +3,6 @@
 wheel
 python-dotenv
 discord
-emoji
 PyNaCl
 requests
-frogtips
 var_dump

@@ -1,5 +1,4 @@
 import discord
-import emoji
 import os
 import random
 import requests
@@ -8,12 +7,12 @@ from var_dump import var_dump
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 from dotenv import load_dotenv
-from frogtips import api as frogtips_api
 from uuid import UUID
+from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.8"
+VERSION_NUMBER = "0.8.9"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -22,7 +21,6 @@ load_dotenv()
 
 # Set constants from environment variables
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-API_HOST = os.getenv('API_HOST')
 
 # Initialise the bot
 bot = commands.Bot(('?', '!k'))
@@ -34,9 +32,6 @@ bot = commands.Bot(('?', '!k'))
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send('```ERROR: Command not found - please use the ?help command to find out what commands are supported.```')
-        return
-    else:
-        var_dump(error)
         return
     raise error
 
@@ -137,6 +132,68 @@ async def dt(cxt, query=None):
         
         await cxt.send(response)
 
+# FCC ID search command
+@bot.command(pass_context = True)
+async def fccid(cxt, query=None):
+    """Searches FCC database for given FCC ID number"""
+
+    # Make sure the user has entered a query
+    if query is None:
+        await cxt.send("```ERROR: no or invalid query provided.```")
+        return
+
+    # Assemble components for a FCC ID database search request
+    URL = "https://apps.fcc.gov/OETLabServices/getFCCIDList"
+    PARAMS = {
+        "fccId": query
+    }
+
+    # Because the query takes a long time to run,
+    # indicate to the user that something is happening.
+    await cxt.send(f"Searching FCC database for _{query}_. Just a moment...")
+
+    # display the 'typing' indicator while searching for user's query
+    async with cxt.channel.typing():
+        # Get search results
+        req = requests.get(url=URL, params=PARAMS)
+        raw = req.content
+        
+        # Parse raw response into 'objectified' XML tree
+        tree = ElementTree(fromstring(raw))
+        root = tree.getroot()
+
+        # Count results
+        hits = 0
+        for child in root:
+            hits += 1
+
+        # Check for results
+        if hits == 0:
+            message = f'No results for _{query}_ found.'
+            await cxt.send(message)
+            return
+
+        # Process results
+        response = f"Here's what I found for _{query}_:\n"
+        c = 5
+        for child in root:
+            if (c == 0):
+                 break
+
+            c -= 1
+            hits -= 1
+            response += f"> **{5 - c}:** " \
+                        f"{child[4].text}, " \
+                        f"{child[6].text}, " \
+                        f"{child[5].text}, " \
+                        f"{child[1].text}, " \
+                        f"<http://fcc.io/{child[4].text}>\n" \
+        
+        if hits > 0:
+            response += f'\nPlus an additional {hits} results.'
+        
+        await cxt.send(response)
+
 # FRU number keyboard search command
 @bot.command(pass_context = True)
 async def kbfru(cxt, fru_num=None):
@@ -189,9 +246,7 @@ async def kbfru(cxt, fru_num=None):
 
     # Handle situation where no results are returned
     if result['hits'] == 0:
-        message = f"FRU number {fru_num} not found in database.\n"
-        message += "Would you like to add it to the database? Just visit\n"
-        message += f"<https://sharktastica.co.uk/kb_db_sub.php?pn={fru_num}>"
+        message = f"FRU number {fru_num} was not found in the database. If you would like to add it to the database, just visit <https://sharktastica.co.uk/kb_db_sub.php?pn={fru_num}>."
         await cxt.send(message)
         return
 
@@ -262,9 +317,7 @@ async def kbpn(cxt, part_num=None):
 
     # Handle situation where no results are returned
     if result['hits'] == 0:
-        message = f"Part number {part_num} not found in database.\n"
-        message += "Would you like to add it to the database? Just visit\n"
-        message += f"<https://sharktastica.co.uk/kb_db_sub.php?pn={part_num}>"
+        message = f"Part number {part_num}  was not found in the database. If you would like to add it to the database, just visit <https://sharktastica.co.uk/kb_db_sub.php?pn={part_num}>."
         await cxt.send(message)
         return
 

@@ -26,6 +26,7 @@ Linux:
 ## Commands
 cappybot uses '?' as its command prefix. List of current commands:
 * ?dt - Searches deskthority wiki with given query
+* ?fccid - Searches FCC database for given FCC ID number
 * ?kbfru - Queries Admiral Shark's Keebs keyboard database by FRU number
 * ?kbpn - Queries Admiral Shark's Keebs keyboard database by part number (aliases: ?kbdb, !kbdb)
 * ?kbsearch - Searches Admiral Shark's Keebs keyboard database with given query (aliases: !kbsearch)
