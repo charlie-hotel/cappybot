@@ -4,7 +4,7 @@ Shark's cappybot is my adaptation of doopqoob's (https://github.com/doopqoob) cl
 ## Setting up
 
 ### Requirements
-cappybot should run on either Windows or Linux after installing Python 3 and several required pip packages. You can automate the installation of these packages by running the following command or checking out the `requirements.txt` file. 
+cappybot should run on either Windows or Linux after installing Python 3 and several required pip packages. You can automate the installation of these packages by running the following command, or check out the `requirements.txt` file if you want to manually install them. 
 
     pip3 install -r requirements.txt
 
@@ -15,7 +15,7 @@ cappybot looks for a .env file containing a Discord API token in the format:
 
     DISCORD_TOKEN=your_token_here
 
-### Running cappybot
+### Running
 Windows:
 
     py cappybot.py
@@ -24,14 +24,18 @@ Linux:
     python3 cappybot.py
 
 ## Commands
-cappybot uses '?' as its command prefix.
-### Searching
+cappybot uses '?' as its command prefix with some '!'-prefixed alias commands supported to provide familiarity with the doopqoob's clackbot. 
+### Researching
 * ?docs - Searches Admiral Shark's Keebs documents database with given query
 * ?dt - Searches deskthority wiki with given query
 * ?fccid - Searches FCC database for given FCC ID number
 * ?kbfru - Queries Admiral Shark's Keebs keyboard database by FRU number
 * ?kbpn - Queries Admiral Shark's Keebs keyboard database by part number (aliases: ?kbdb, !kbdb)
 * ?kbsearch - Searches Admiral Shark's Keebs keyboard database with given query (aliases: !kbsearch)
+### Subreddits
+* ?rmk - Searches the r/MechanicalKeyboards subreddit with given query
+* ?rmodelf - Searches the r/ModelF subreddit with given query
+* ?rmodelm - Searches the r/ModelM subreddit with given query
 ### Misc
 * ?about - displays cappybot's about page (aliases: ?abt)
 * ?source - gives a link to cappybot's GitHub repo (aliases: ?src)

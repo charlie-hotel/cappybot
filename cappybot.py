@@ -12,7 +12,7 @@ from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.12"
+VERSION_NUMBER = "0.8.13"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -58,7 +58,7 @@ async def version(cxt):
 
 
 
-class Searching(commands.Cog):
+class Researching(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     # Keyboard documents search command
@@ -77,7 +77,7 @@ class Searching(commands.Cog):
 
         # Because the query takes a long time to run,
         # indicate to the user that something is happening.
-        await cxt.send(f"Searching Admiral Shark's Keebs for _{query}_. Just a moment...")
+        await cxt.send(f"Searching Admiral Shark's Keebs for \"{query}\". Just a moment...")
 
         # display the 'typing' indicator while searching for user's query
         async with cxt.channel.typing():
@@ -95,12 +95,12 @@ class Searching(commands.Cog):
 
             # Handle other situation where no results are returned
             if result['hits'] == 0:
-                message = f'No results for _{query}_ found'
+                message = f'No results for "{query}" found in Admiral Shark\'s Keebs'
                 await cxt.send(message)
                 return
 
             # Build the response
-            response = f"Here's what I found for _{query}_:\n"
+            response = f"Here's what I found for \"{query}\":\n"
 
             hits = result['hits']
 
@@ -163,7 +163,7 @@ class Searching(commands.Cog):
 
         # Because the query takes a long time to run,
         # indicate to the user that something is happening.
-        await cxt.send(f"Searching deskthority wiki for _{query}_. Just a moment...")
+        await cxt.send(f"Searching deskthority wiki for \"{query}\". Just a moment...")
 
         # display the 'typing' indicator while searching for user's query
         async with cxt.channel.typing():
@@ -179,14 +179,14 @@ class Searching(commands.Cog):
             hits = rsts_title["query"]["searchinfo"]["totalhits"] + rsts_text["query"]["searchinfo"]["totalhits"]
 
             if hits == 0:
-                message = f'No results for _{query}_ found'
+                message = f'No results for "{query}" found in deskthority wiki'
                 await cxt.send(message)
                 return
 
             # Output results
             response = ""
             if rsts_title["query"]["searchinfo"]["totalhits"] > 0:
-                response = f"Here's the page **title** matches I found for _{query}_:\n"
+                response = f"Here's the page **title** matches I found for \"{query}\":\n"
                 c = 5
                 for i, page in enumerate(rsts_title["query"]["search"]):
                     if (c == 0):
@@ -199,7 +199,7 @@ class Searching(commands.Cog):
                                 f" <https://deskthority.net/wiki/{page['title'].replace(' ', '_')}>\n" \
             
             if rsts_text["query"]["searchinfo"]["totalhits"] > 0:
-                response += f"Here's the page **text** matches I found for _{query}_:\n"
+                response += f"Here's the page **text** matches I found for \"{query}\":\n"
                 c = 5
                 for i, page in enumerate(rsts_text["query"]["search"]):
                     if (c == 0):
@@ -234,7 +234,7 @@ class Searching(commands.Cog):
 
         # Because the query takes a long time to run,
         # indicate to the user that something is happening.
-        await cxt.send(f"Searching FCC database for _{query}_. Just a moment...")
+        await cxt.send(f"Searching FCC database for \"{query}\". Just a moment...")
 
         # display the 'typing' indicator while searching for user's query
         async with cxt.channel.typing():
@@ -253,12 +253,12 @@ class Searching(commands.Cog):
 
             # Check for results
             if hits == 0:
-                message = f'No results for _{query}_ found'
+                message = f'No results for "{query}" found in the FCC database'
                 await cxt.send(message)
                 return
 
             # Process results
-            response = f"Here's what I found for _{query}_:\n"
+            response = f"Here's what I found for \"{query}\":\n"
             c = 5
             for child in root:
                 if (c == 0):
@@ -437,7 +437,7 @@ class Searching(commands.Cog):
 
         # Because the query takes a long time to run,
         # indicate to the user that something is happening.
-        await cxt.send(f"Searching Admiral Shark's Keebs for _{query}_. Just a moment...")
+        await cxt.send(f"Searching Admiral Shark's Keebs for \"{query}\". Just a moment...")
 
         # display the 'typing' indicator while searching for user's query
         async with cxt.channel.typing():
@@ -455,12 +455,12 @@ class Searching(commands.Cog):
 
             # Handle other situation where no results are returned
             if result['hits'] == 0:
-                message = f'No results for _{query}_ found'
+                message = f'No results for "{query}" found in Admiral Shark\'s Keebs'
                 await cxt.send(message)
                 return
 
             # Build the response
-            response = f"Here's what I found for _{query}_:\n"
+            response = f"Here's what I found for \"{query}\":\n"
 
             hits = result['hits']
 
@@ -482,8 +482,189 @@ class Searching(commands.Cog):
 
 
 
+class Subreddits(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    # Search r/MechanicalKeyboards command
+    @commands.command(pass_context = True)
+    async def rmk(self, cxt, query=None):
+        """Searches the r/MechanicalKeyboards subreddit with given query"""
+
+        # Make sure the user has entered a query
+        if query is None:
+            await cxt.send("```ERROR: no or invalid query provided.```")
+            return
+
+        # Assemble components for a subreddit search request
+        URL = "https://www.reddit.com/r/mechanicalkeyboards/search.json"
+        PARAMS = {
+            "include_over_18": "off",
+            "restrict_sr": "on",
+            "q": query
+        }
+        HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
+
+        # Because the query takes a long time to run,
+        # indicate to the user that something is happening.
+        await cxt.send(f"Searching r/MechanicalKeyboards for \"{query}\". Just a moment...")
+
+        # display the 'typing' indicator while searching for user's query
+        async with cxt.channel.typing():
+            # Get search results
+            req = requests.get(url=URL, params=PARAMS, headers=HEADERS)
+            rsts = req.json()
+                
+            # Get number of hits
+            hits = rsts["data"]["dist"]
+
+            if hits == 0:
+                message = f'No results for "{query}" found in r/MechanicalKeyboards'
+                await cxt.send(message)
+                return
+
+            # Output results
+            response = f"Here's the results I found for \"{query}\":\n"
+            c = 5
+            for i, post in enumerate(rsts["data"]["children"]):
+                # "t3" = subreddit link, which is what we want
+                if (post['kind'] != "t3"):
+                    continue 
+                if (c == 0):
+                    break
+                c -= 1
+                hits -= 1
+                response += f"> **{i + 1}:** " \
+                            f" \"{post['data']['title']}\" " \
+                            f" by u/{post['data']['author']}, " \
+                            f" <https://www.reddit.com{post['data']['permalink']}>\n" \
+            
+            if hits > 0:
+                response += f'\nPlus an additional {hits} results you can see by going to <https://www.reddit.com/r/mechanicalkeyboards/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
+            
+            await cxt.send(response)
+
+    # Search r/ModelF command
+    @commands.command(pass_context = True)
+    async def rmodelf(self, cxt, query=None):
+        """Searches the r/ModelF subreddit with given query"""
+
+        # Make sure the user has entered a query
+        if query is None:
+            await cxt.send("```ERROR: no or invalid query provided.```")
+            return
+
+        # Assemble components for a subreddit search request
+        URL = "https://www.reddit.com/r/modelf/search.json"
+        PARAMS = {
+            "include_over_18": "off",
+            "restrict_sr": "on",
+            "q": query
+        }
+        HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
+
+        # Because the query takes a long time to run,
+        # indicate to the user that something is happening.
+        await cxt.send(f"Searching r/ModelF for \"{query}\". Just a moment...")
+
+        # display the 'typing' indicator while searching for user's query
+        async with cxt.channel.typing():
+            # Get search results
+            req = requests.get(url=URL, params=PARAMS, headers=HEADERS)
+            rsts = req.json()
+                
+            # Get number of hits
+            hits = rsts["data"]["dist"]
+
+            if hits == 0:
+                message = f'No results for "{query}" found in r/ModelF'
+                await cxt.send(message)
+                return
+
+            # Output results
+            response = f"Here's the results I found for \"{query}\":\n"
+            c = 5
+            for i, post in enumerate(rsts["data"]["children"]):
+                # "t3" = subreddit link, which is what we want
+                if (post['kind'] != "t3"):
+                    continue 
+                if (c == 0):
+                    break
+                c -= 1
+                hits -= 1
+                response += f"> **{i + 1}:** " \
+                            f" \"{post['data']['title']}\" " \
+                            f" by u/{post['data']['author']}, " \
+                            f" <https://www.reddit.com{post['data']['permalink']}>\n" \
+            
+            if hits > 0:
+                response += f'\nPlus an additional {hits} results you can see by going to <https://www.reddit.com/r/modelf/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
+            
+            await cxt.send(response)
+
+    # Search r/ModelM command
+    @commands.command(pass_context = True)
+    async def rmodelm(self, cxt, query=None):
+        """Searches the r/ModelM subreddit with given query"""
+
+        # Make sure the user has entered a query
+        if query is None:
+            await cxt.send("```ERROR: no or invalid query provided.```")
+            return
+
+        # Assemble components for a subreddit search request
+        URL = "https://www.reddit.com/r/modelm/search.json"
+        PARAMS = {
+            "include_over_18": "off",
+            "restrict_sr": "on",
+            "q": query
+        }
+        HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
+
+        # Because the query takes a long time to run,
+        # indicate to the user that something is happening.
+        await cxt.send(f"Searching r/ModelM for \"{query}\". Just a moment...")
+
+        # display the 'typing' indicator while searching for user's query
+        async with cxt.channel.typing():
+            # Get search results
+            req = requests.get(url=URL, params=PARAMS, headers=HEADERS)
+            rsts = req.json()
+                
+            # Get number of hits
+            hits = rsts["data"]["dist"]
+
+            if hits == 0:
+                message = f'No results for "{query}" found in r/ModelM'
+                await cxt.send(message)
+                return
+
+            # Output results
+            response = f"Here's the results I found for \"{query}\":\n"
+            c = 5
+            for i, post in enumerate(rsts["data"]["children"]):
+                # "t3" = subreddit link, which is what we want
+                if (post['kind'] != "t3"):
+                    continue 
+                if (c == 0):
+                    break
+                c -= 1
+                hits -= 1
+                response += f"> **{i + 1}:** " \
+                            f" \"{post['data']['title']}\" " \
+                            f" by u/{post['data']['author']}, " \
+                            f" <https://www.reddit.com{post['data']['permalink']}>\n" \
+            
+            if hits > 0:
+                response += f'\nPlus an additional {hits} results you can see by going to <https://www.reddit.com/r/modelm/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
+            
+            await cxt.send(response)
+
+
+
 # Add cogs to bot
-bot.add_cog(Searching(bot))
+bot.add_cog(Researching(bot))
+bot.add_cog(Subreddits(bot))
 
 # Run the bot
 bot.run(DISCORD_TOKEN)
