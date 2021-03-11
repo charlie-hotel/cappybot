@@ -3,12 +3,12 @@ Shark's cappybot is my adaptation of doopqoob's (https://github.com/doopqoob) cl
 
 ## Setting up
 
-### Installing the Requirements
-You should install the required pip packages by typing:
+### Requirements
+cappybot should run on either Windows or Linux fine after installing the required pip packages: 
 
-    $ pip3 install -r requirements.txt
+    pip3 install -r requirements.txt
 
-You will also need to install _ffmpeg_.
+On Linux, you will also need to install `ffmpeg`.
 
 ### .env file
 cappybot looks for a .env file containing a Discord API token in the format:
@@ -24,11 +24,14 @@ Linux:
     python3 cappybot.py
 
 ## Commands
-cappybot uses '?' as its command prefix. List of current commands:
+cappybot uses '?' as its command prefix.
+### Searching
+* ?docs - Searches Admiral Shark's Keebs documents database with given query
 * ?dt - Searches deskthority wiki with given query
 * ?fccid - Searches FCC database for given FCC ID number
 * ?kbfru - Queries Admiral Shark's Keebs keyboard database by FRU number
 * ?kbpn - Queries Admiral Shark's Keebs keyboard database by part number (aliases: ?kbdb, !kbdb)
 * ?kbsearch - Searches Admiral Shark's Keebs keyboard database with given query (aliases: !kbsearch)
+### Misc
 * ?source - gives a link to cappybot's GitHub repo (aliases: ?src)
 * ?version - displays cappybot's version number (aliases: ?ver)

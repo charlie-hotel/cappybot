@@ -12,7 +12,7 @@ from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.10"
+VERSION_NUMBER = "0.8.11"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -25,6 +25,7 @@ DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 # Initialise the bot
 help_command = commands.DefaultHelpCommand(no_category = 'Misc')
 bot = commands.Bot(('?', '!k'), help_command = help_command)
+
 
 
 # Catch command not found error
@@ -41,7 +42,7 @@ async def on_command_error(ctx, error):
 @bot.command(pass_context = True, aliases=['src'])
 async def source(cxt):
     """Gives a link to cappybot's GitHub repo"""
-    await cxt.send(f'https://github.com/SharktallicA/cappybot')
+    await cxt.send(f'<https://github.com/SharktallicA/cappybot>')
 
 # Display version command
 @bot.command(pass_context = True, aliases=['ver'])
@@ -54,6 +55,76 @@ async def version(cxt):
 class Searching(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+    # Keyboard documents search command
+    @commands.command(pass_context = True)
+    async def docs(self, cxt, *args):
+        """Searches Admiral Shark's Keebs documents database with given query"""
+
+        # The query is the first argument given
+        # (Shark's database takes care of figuring out
+        # what query type this is)
+        query = args[0]
+        result_count = 5
+
+        # Build the URL
+        url = f'https://sharktastica.co.uk/documents_req.php?name={query}&dat=JSON&fields=*&c={result_count}'
+
+        # Because the query takes a long time to run,
+        # indicate to the user that something is happening.
+        await cxt.send(f"Searching Admiral Shark's Keebs for _{query}_. Just a moment...")
+
+        # display the 'typing' indicator while searching for user's query
+        async with cxt.channel.typing():
+            # Query the DB
+            result = requests.get(url)
+
+            # Convert JSON into a python data structure
+            result = result.json()
+
+            # Handle situation where no results are returned
+            if result['success'] is False:
+                message = f'```ERROR: {result["message"]}```'
+                await cxt.send(message)
+                return
+
+            # Handle other situation where no results are returned
+            if result['hits'] == 0:
+                message = f'No results for _{query}_ found'
+                await cxt.send(message)
+                return
+
+            # Build the response
+            response = f"Here's what I found for _{query}_:\n"
+
+            hits = result['hits']
+
+            # Iterate through each keyboard in result.
+            for index, doc in enumerate(result['results']):
+                hits -= 1
+                name = doc['name']
+                ed = doc['ed']
+                if (ed == None):
+                    ed = "1"
+                src = doc['src']
+                if (src == None):
+                    src = "source unknown"
+                date = date_2_str(doc['date'])
+                ref = doc['ref']
+                if (ref == None):
+                    ref = "unknown"
+                link = doc['link']
+                response += f"> **{index + 1}:** " \
+                            f" {name}, " \
+                            f" Ed. {ed}, " \
+                            f" {src}, " \
+                            f" {date}, " \
+                            f" ref {ref}, " \
+                            f" {link} \n" \
+
+            if hits > 0:
+                response += f'\nPlus an additional {hits} results.\n\n'
+
+            await cxt.send(response)
 
     # deskthority wiki search command
     @commands.command(pass_context = True)
@@ -102,7 +173,7 @@ class Searching(commands.Cog):
             hits = rsts_title["query"]["searchinfo"]["totalhits"] + rsts_text["query"]["searchinfo"]["totalhits"]
 
             if hits == 0:
-                message = f'No results for _{query}_ found.'
+                message = f'No results for _{query}_ found'
                 await cxt.send(message)
                 return
 
@@ -176,7 +247,7 @@ class Searching(commands.Cog):
 
             # Check for results
             if hits == 0:
-                message = f'No results for _{query}_ found.'
+                message = f'No results for _{query}_ found'
                 await cxt.send(message)
                 return
 
@@ -378,7 +449,7 @@ class Searching(commands.Cog):
 
             # Handle other situation where no results are returned
             if result['hits'] == 0:
-                message = f'No results for _{query}_ found.'
+                message = f'No results for _{query}_ found'
                 await cxt.send(message)
                 return
 
