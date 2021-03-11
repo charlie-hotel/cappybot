@@ -12,7 +12,7 @@ cappybot should run on either Windows or Linux after installing Python 3, ffmpeg
 cappybot looks for the file `.env` in the local directory to get two environment variables; a Discord API token and the location of the `ffmpeg.exe` binary if you're running cappybot on Windows. You will need to create this `.env` file using the following template:
 
     DISCORD_TOKEN=your_token_here
-    FFMPEG_WIN=your_token_here
+    FFMPEG_WIN=path_to_ffmpeg_here
 
 If you're running cappybot on Linux, you can leave out the `FFMPEG_WIN` line.
 
@@ -42,8 +42,10 @@ cappybot uses '?' as its command prefix with some '!'-prefixed alias commands su
 * ?sharks - Searches Admiral Shark's Keebs articles and topics of interest with given query
 ### Subreddits
 * ?rmk - searches the r/MechanicalKeyboards subreddit with given query
+* ?rmm - searches the r/MechMarket subreddit with given query
 * ?rmodelf - searches the r/ModelF subreddit with given query
 * ?rmodelm - searches the r/ModelM subreddit with given query
+* ?rtp - searches the r/ThinkPad subreddit with given query
 ### Misc
 * ?about - displays cappybot's about page (aliases: ?abt)
 * ?source - gives a link to cappybot's GitHub repo (aliases: ?src)

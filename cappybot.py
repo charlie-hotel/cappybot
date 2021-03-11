@@ -13,7 +13,7 @@ from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.17"
+VERSION_NUMBER = "0.8.18"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -662,6 +662,7 @@ class Subreddits(commands.Cog):
         PARAMS = {
             "include_over_18": "off",
             "restrict_sr": "on",
+            "sort": "new",
             "q": query
         }
         HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
@@ -701,7 +702,67 @@ class Subreddits(commands.Cog):
                             f" <https://www.reddit.com{post['data']['permalink']}>\n" \
             
             if hits > 0:
-                response += f'\nPlus an additional {hits} results you can see by going to <https://www.reddit.com/r/mechanicalkeyboards/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
+                response += f'\nPlus an additional {hits}+ results you can see by going to <https://www.reddit.com/r/mechanicalkeyboards/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
+            
+            await cxt.send(response)
+
+
+    # Search r/MechMarket command
+    @commands.command(pass_context = True)
+    async def rmm(self, cxt, query=None):
+        """Searches the r/MechMarket subreddit with given query"""
+
+        # Make sure the user has entered a query
+        if query is None:
+            await cxt.send("```ERROR: no or invalid query provided.```")
+            return
+
+        # Assemble components for a subreddit search request
+        URL = "https://www.reddit.com/r/mechmarket/search.json"
+        PARAMS = {
+            "include_over_18": "off",
+            "restrict_sr": "on",
+            "sort": "new",
+            "q": query
+        }
+        HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
+
+        # Because the query takes a long time to run,
+        # indicate to the user that something is happening.
+        await cxt.send(f"Searching r/MechMarket for \"{query}\". Just a moment...")
+
+        # display the 'typing' indicator while searching for user's query
+        async with cxt.channel.typing():
+            # Get search results
+            req = requests.get(url=URL, params=PARAMS, headers=HEADERS)
+            rsts = req.json()
+                
+            # Get number of hits
+            hits = rsts["data"]["dist"]
+
+            if hits == 0:
+                message = f'No results for "{query}" found in r/MechMarket'
+                await cxt.send(message)
+                return
+
+            # Output results
+            response = f"Here's the results I found for \"{query}\":\n"
+            c = 5
+            for i, post in enumerate(rsts["data"]["children"]):
+                # "t3" = subreddit link, which is what we want
+                if (post['kind'] != "t3"):
+                    continue 
+                if (c == 0):
+                    break
+                c -= 1
+                hits -= 1
+                response += f"> **{i + 1}:** " \
+                            f" \"{post['data']['title']}\" " \
+                            f" by u/{post['data']['author']}, " \
+                            f" <https://www.reddit.com{post['data']['permalink']}>\n" \
+            
+            if hits > 0:
+                response += f'\nPlus an additional {hits}+ results you can see by going to <https://www.reddit.com/r/mechmarket/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
             
             await cxt.send(response)
 
@@ -720,6 +781,7 @@ class Subreddits(commands.Cog):
         PARAMS = {
             "include_over_18": "off",
             "restrict_sr": "on",
+            "sort": "new",
             "q": query
         }
         HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
@@ -759,7 +821,7 @@ class Subreddits(commands.Cog):
                             f" <https://www.reddit.com{post['data']['permalink']}>\n" \
             
             if hits > 0:
-                response += f'\nPlus an additional {hits} results you can see by going to <https://www.reddit.com/r/modelf/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
+                response += f'\nPlus an additional {hits}+ results you can see by going to <https://www.reddit.com/r/modelf/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
             
             await cxt.send(response)
 
@@ -778,6 +840,7 @@ class Subreddits(commands.Cog):
         PARAMS = {
             "include_over_18": "off",
             "restrict_sr": "on",
+            "sort": "new",
             "q": query
         }
         HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
@@ -817,7 +880,66 @@ class Subreddits(commands.Cog):
                             f" <https://www.reddit.com{post['data']['permalink']}>\n" \
             
             if hits > 0:
-                response += f'\nPlus an additional {hits} results you can see by going to <https://www.reddit.com/r/modelm/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
+                response += f'\nPlus an additional {hits}+ results you can see by going to <https://www.reddit.com/r/modelm/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
+            
+            await cxt.send(response)
+    
+    # Search r/ThinkPad command
+    @commands.command(pass_context = True)
+    async def rtp(self, cxt, query=None):
+        """Searches the r/ThinkPad subreddit with given query"""
+
+        # Make sure the user has entered a query
+        if query is None:
+            await cxt.send("```ERROR: no or invalid query provided.```")
+            return
+
+        # Assemble components for a subreddit search request
+        URL = "https://www.reddit.com/r/thinkpad/search.json"
+        PARAMS = {
+            "include_over_18": "off",
+            "restrict_sr": "on",
+            "sort": "new",
+            "q": query
+        }
+        HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0"}
+
+        # Because the query takes a long time to run,
+        # indicate to the user that something is happening.
+        await cxt.send(f"Searching r/ThinkPad for \"{query}\". Just a moment...")
+
+        # display the 'typing' indicator while searching for user's query
+        async with cxt.channel.typing():
+            # Get search results
+            req = requests.get(url=URL, params=PARAMS, headers=HEADERS)
+            rsts = req.json()
+                
+            # Get number of hits
+            hits = rsts["data"]["dist"]
+
+            if hits == 0:
+                message = f'No results for "{query}" found in r/ThinkPad'
+                await cxt.send(message)
+                return
+
+            # Output results
+            response = f"Here's the results I found for \"{query}\":\n"
+            c = 5
+            for i, post in enumerate(rsts["data"]["children"]):
+                # "t3" = subreddit link, which is what we want
+                if (post['kind'] != "t3"):
+                    continue 
+                if (c == 0):
+                    break
+                c -= 1
+                hits -= 1
+                response += f"> **{i + 1}:** " \
+                            f" \"{post['data']['title']}\" " \
+                            f" by u/{post['data']['author']}, " \
+                            f" <https://www.reddit.com{post['data']['permalink']}>\n" \
+            
+            if hits > 0:
+                response += f'\nPlus an additional {hits}+ results you can see by going to <https://www.reddit.com/r/thinkpad/search?q={query.replace(" ", "+")}&restrict_sr=1&include_over_18=off>.'
             
             await cxt.send(response)
 
