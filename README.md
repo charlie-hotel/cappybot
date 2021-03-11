@@ -1,5 +1,5 @@
 # cappybot
-Shark's cappybot is my adaptation of doopqoob's (https://github.com/doopqoob) clackbot with community features removed (temporarily) but eventually featuring additional database functionality and tighter integration with my website (https://sharktastica.co.uk) and deskthority wiki.
+cappybot is a Discord bot tailored specifically for use on the r/ModelM and other Discord servers that I moderate. Based on doopqoob's (https://github.com/doopqoob) clackbot 0.8, this is a successor bot that integrates with Admiral Shark's Keebs website, deskthority wiki and the FCC database to provide keyboard lookup and research capabilities. Other current or planned features include r/ModelM, r/ModelF and r/MechanicalKeyboards subreddit searching, keyboard ASMR typing playback and some basic community features.
 
 ## Setting up
 
