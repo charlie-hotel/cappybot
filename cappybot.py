@@ -13,7 +13,7 @@ from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.15"
+VERSION_NUMBER = "0.8.16"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -43,7 +43,7 @@ async def on_command_error(ctx, error):
 @bot.command(pass_context = True, aliases=['abt'])
 async def about(cxt):
     """Displays cappybot's about page"""
-    await cxt.send(f"cappybot is a Discord bot tailored specifically for use on the r/ModelM and other Discord servers moderated by {SHARK_UID}. Based on {DOOP_UID}'s clackbot 0.8, this is a successor bot developed by {SHARK_UID} that integrates with Admiral Shark's Keebs website, deskthority wiki and the FCC database to provide keyboard lookup and research capabilities. Other current or planned features include r/ModelM, r/ModelF and r/MechanicalKeyboards subreddit searching, keyboard ASMR typing playback and some basic community features.")
+    await cxt.send(f"cappybot is a Discord bot developed by {SHARK_UID} that is tailored specifically for use on the r/ModelM and other Discord servers that I moderate. Based on {DOOP_UID}'s clackbot 0.8, this is a successor bot that integrates with my (Admiral Shark's Keebs) website, deskthority wiki and the FCC database to provide keyboard lookup and research capabilities. Other current or planned features include r/ModelM, r/ModelF and r/MechanicalKeyboards subreddit searching, keyboard ASMR typing playback and some basic community features.")
 
 # Link source repo command
 @bot.command(pass_context = True, aliases=['src'])
@@ -502,6 +502,61 @@ class Researching(commands.Cog):
                 response += f'\nPlus an additional {hits} results.\n\n'
 
             response += "You can type `?kbpn [part number]` to find out more about a specific keyboard. To learn how to search efficiently, see <https://sharktastica.co.uk/kb_db_help.php#SearchingGuide>. Learn about where this data came from, see <https://sharktastica.co.uk/about.php#Sources>"
+            await cxt.send(response)
+
+    # Admiral Shark's Keebs search command
+    @commands.command(pass_context = True)
+    async def sharks(self, cxt, *args):
+        """Searches Admiral Shark's Keebs articles and topics of interest with given query"""
+
+        # The query is the first argument given
+        # (Shark's database takes care of figuring out
+        # what query type this is)
+        query = args[0]
+        result_count = 5
+
+        # Build the URL
+        url = f'https://sharktastica.co.uk/search_req.php?q={query}&dat=JSON&c={result_count}'
+
+        # Because the query takes a long time to run,
+        # indicate to the user that something is happening.
+        await cxt.send(f"Searching Admiral Shark's Keebs for \"{query}\". Just a moment...")
+
+        # display the 'typing' indicator while searching for user's query
+        async with cxt.channel.typing():
+            # Query the DB
+            result = requests.get(url)
+
+            # Convert JSON into a python data structure
+            result = result.json()
+
+            # Handle situation where no results are returned
+            if result['success'] is False:
+                message = f'```ERROR: {result["message"]}```'
+                await cxt.send(message)
+                return
+
+            # Handle other situation where no results are returned
+            if result['hits'] == 0:
+                message = f'No results for "{query}" found in Admiral Shark\'s Keebs'
+                await cxt.send(message)
+                return
+
+            # Build the response
+            response = f"Here's what I found for \"{query}\":\n"
+
+            hits = result['hits']
+
+            # Iterate through each keyboard in result.
+            for index, doc in enumerate(result['results']):
+                hits -= 1
+                response += f"> **{index + 1}:** " \
+                            f" {doc['name']}, " \
+                            f" <{doc['link']}>\n" \
+
+            if hits > 0:
+                response += f'\nPlus an additional {hits} results.\n\n'
+
             await cxt.send(response)
 
 

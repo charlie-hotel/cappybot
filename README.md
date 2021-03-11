@@ -1,5 +1,5 @@
 # cappybot
-cappybot is a Discord bot tailored specifically for use on the r/ModelM and other Discord servers that I moderate. Based on doopqoob's (https://github.com/doopqoob) clackbot 0.8, this is a successor bot that integrates with Admiral Shark's Keebs website, deskthority wiki and the FCC database to provide keyboard lookup and research capabilities. Other current or planned features include r/ModelM, r/ModelF and r/MechanicalKeyboards subreddit searching, keyboard ASMR typing playback and some basic community features.
+cappybot is a Discord bot tailored specifically for use on the r/ModelM and other Discord servers that I moderate. Based on doopqoob's (https://github.com/doopqoob) clackbot 0.8, this is a successor bot that integrates with my (Admiral Shark's Keebs) website, deskthority wiki and the FCC database to provide keyboard lookup and research capabilities. Other current or planned features include r/ModelM, r/ModelF and r/MechanicalKeyboards subreddit searching, keyboard ASMR typing playback and some basic community features.
 
 ## Setting up
 
@@ -34,6 +34,7 @@ cappybot uses '?' as its command prefix with some '!'-prefixed alias commands su
 * ?kbfru - queries Admiral Shark's Keebs keyboard database by FRU number
 * ?kbpn - queries Admiral Shark's Keebs keyboard database by part number (aliases: ?kbdb, !kbdb)
 * ?kbsearch - searches Admiral Shark's Keebs keyboard database with given query (aliases: !kbsearch)
+* ?sharks - Searches Admiral Shark's Keebs articles and topics of interest with given query
 ### Subreddits
 * ?rmk - searches the r/MechanicalKeyboards subreddit with given query
 * ?rmodelf - searches the r/ModelF subreddit with given query
