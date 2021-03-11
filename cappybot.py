@@ -7,12 +7,13 @@ from var_dump import var_dump
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 from dotenv import load_dotenv
+from frogtips import api as frogtips_api
 from uuid import UUID
 from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.13"
+VERSION_NUMBER = "0.8.14"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -58,9 +59,32 @@ async def version(cxt):
 
 
 
+class Community(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    # FROG TIP command
+    @commands.command(cxt = True)
+    async def frogtip(self, cxt, tip_id=None):
+        """Displays a FROG TIP"""
+        if tip_id is None:
+            tip = frogtips_api.Tips().get_next_tip()
+        else:
+            tip_id = int(tip_id)
+            tip = frogtips_api.Tip(tip_id)
+
+        formatted_tip = tip.get_formatted_tip()
+        formatted_tip += '\n'
+        formatted_tip += f"<https://frog.tips/#{str(tip.get_id())}>"
+
+        await cxt.send(formatted_tip)
+
+
+
 class Researching(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
     # Keyboard documents search command
     @commands.command(pass_context = True)
     async def docs(self, cxt, *args):
@@ -663,6 +687,7 @@ class Subreddits(commands.Cog):
 
 
 # Add cogs to bot
+bot.add_cog(Community(bot))
 bot.add_cog(Researching(bot))
 bot.add_cog(Subreddits(bot))
 

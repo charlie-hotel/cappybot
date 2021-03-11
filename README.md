@@ -25,17 +25,19 @@ Linux:
 
 ## Commands
 cappybot uses '?' as its command prefix with some '!'-prefixed alias commands supported to provide familiarity with the doopqoob's clackbot. 
+### Community
+* ?frogtip - displays a FROG TIP
 ### Researching
-* ?docs - Searches Admiral Shark's Keebs documents database with given query
-* ?dt - Searches deskthority wiki with given query
-* ?fccid - Searches FCC database for given FCC ID number
-* ?kbfru - Queries Admiral Shark's Keebs keyboard database by FRU number
-* ?kbpn - Queries Admiral Shark's Keebs keyboard database by part number (aliases: ?kbdb, !kbdb)
-* ?kbsearch - Searches Admiral Shark's Keebs keyboard database with given query (aliases: !kbsearch)
+* ?docs - searches Admiral Shark's Keebs documents database with given query
+* ?dt - searches deskthority wiki with given query
+* ?fccid - searches FCC database for given FCC ID number
+* ?kbfru - queries Admiral Shark's Keebs keyboard database by FRU number
+* ?kbpn - queries Admiral Shark's Keebs keyboard database by part number (aliases: ?kbdb, !kbdb)
+* ?kbsearch - searches Admiral Shark's Keebs keyboard database with given query (aliases: !kbsearch)
 ### Subreddits
-* ?rmk - Searches the r/MechanicalKeyboards subreddit with given query
-* ?rmodelf - Searches the r/ModelF subreddit with given query
-* ?rmodelm - Searches the r/ModelM subreddit with given query
+* ?rmk - searches the r/MechanicalKeyboards subreddit with given query
+* ?rmodelf - searches the r/ModelF subreddit with given query
+* ?rmodelm - searches the r/ModelM subreddit with given query
 ### Misc
 * ?about - displays cappybot's about page (aliases: ?abt)
 * ?source - gives a link to cappybot's GitHub repo (aliases: ?src)

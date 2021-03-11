@@ -5,4 +5,5 @@ python-dotenv
 discord
 PyNaCl
 requests
+frogtips
 var_dump
