@@ -4,16 +4,17 @@ cappybot is a Discord bot tailored specifically for use on the r/ModelM and othe
 ## Setting up
 
 ### Requirements
-cappybot should run on either Windows or Linux after installing Python 3 and several required pip packages. You can automate the installation of these packages by running the following command, or check out the `requirements.txt` file if you want to manually install them. 
+cappybot should run on either Windows or Linux after installing Python 3, ffmpeg, and several required `pip` packages. You can automate the installation of these latter packages by running the following command, or check out the `requirements.txt` file if you want to manually install them. 
 
     pip3 install -r requirements.txt
 
-On Linux, you will also need to install `ffmpeg`.
-
-### .env file
-cappybot looks for a .env file containing a Discord API token in the format:
+### Environment
+cappybot looks for the file `.env` in the local directory to get two environment variables; a Discord API token and the location of the `ffmpeg.exe` binary if you're running cappybot on Windows. You will need to create this `.env` file using the following template:
 
     DISCORD_TOKEN=your_token_here
+    FFMPEG_WIN=your_token_here
+
+If you're running cappybot on Linux, you can leave out the `FFMPEG_WIN` line.
 
 ### Running
 Windows:
@@ -26,7 +27,11 @@ Linux:
 ## Commands
 cappybot uses '?' as its command prefix with some '!'-prefixed alias commands supported to provide familiarity with the doopqoob's clackbot. 
 ### Community
+* ?clack - tells cappybot to play a random buckling springs typing sample
 * ?frogtip - displays a FROG TIP
+* ?join - calls cappybot to your current voice channel (aliases: ?cloak, ?follow)
+* ?leave - Tells cappybot to leave whatever voice channel it is in (aliases: ?decloak)
+* ?stop - tells cappybot to stop playing the current typing sample
 ### Researching
 * ?docs - searches Admiral Shark's Keebs documents database with given query
 * ?dt - searches deskthority wiki with given query

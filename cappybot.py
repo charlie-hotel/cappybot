@@ -13,7 +13,7 @@ from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.16"
+VERSION_NUMBER = "0.8.17"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -22,6 +22,16 @@ load_dotenv()
 
 # Set constants from environment variables
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+FFMPEG_WIN = os.getenv('FFMPEG_WIN')
+
+# Check if environmental variables are present
+if DISCORD_TOKEN == None:
+    print('ERROR: You must include DISCORD_TOKEN in your .env file. Visit cappybot GitHub repo to learn more - https://github.com/SharktallicA/cappybot.')
+    exit()
+if FFMPEG_WIN == None:
+    if os.name == 'nt':
+        print('ERROR: If you are using cappybot on Windows, you must include FFMPEG_WIN in your .env file. Visit cappybot GitHub repo to learn more - https://github.com/SharktallicA/cappybot.')
+        exit()
 
 # Initialise the bot
 help_command = commands.DefaultHelpCommand(no_category = 'Misc')
@@ -63,8 +73,46 @@ class Community(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # Play buckling springs typing sample command
+    @commands.command(pass_context = True)
+    async def clack(self, cxt):
+        """Tells cappybot to play a random buckling springs typing sample"""
+
+        # set up voice channel
+        guild = cxt.guild
+        voice_client: discord.VoiceClient = discord.utils.get(bot.voice_clients, guild=guild)
+
+        # Catch if cappybot isn't in voice channel
+        if voice_client is None:
+            await cxt.send("```NOTE: cappybot needs to be in a voice channel to do this.```")
+            return
+
+        # Get list of files from appropriate sounds directory
+        (_, _, files) = next(os.walk('ibm_sounds/'))
+
+        # Randomise list and choose a file to play
+        random.shuffle(files)
+        to_play = None
+        for x in range(10):
+            to_play = random.choice(files)
+
+        # Set up audio source
+        audio_source = None
+        if os.name == 'nt':
+            audio_source = discord.FFmpegPCMAudio(executable=FFMPEG_WIN, source=f'ibm_sounds/{to_play}')
+        else:
+            audio_source = discord.FFmpegPCMAudio(f'ibm_sounds/{to_play}.')
+
+        if not voice_client.is_playing():
+            await cxt.send(f"Playing buckling springs typing sample `{to_play}`. You can use `?clack` again to play a different one.")
+            voice_client.play(audio_source, after=None)
+        else:
+            voice_client.stop()
+            await cxt.send(f"Playing buckling springs typing sample `{to_play}`. You can use `?clack` again to play a different one.")
+            voice_client.play(audio_source, after=None)
+
     # FROG TIP command
-    @commands.command(cxt = True)
+    @commands.command(pass_context = True)
     async def frogtip(self, cxt, tip_id=None):
         """Displays a FROG TIP"""
         if tip_id is None:
@@ -78,6 +126,40 @@ class Community(commands.Cog):
         formatted_tip += f"<https://frog.tips/#{str(tip.get_id())}>"
 
         await cxt.send(formatted_tip)
+
+    # Join voice chat command
+    @commands.command(pass_context = True, aliases=['cloak', 'follow'])
+    async def join(self, cxt):
+        """Calls cappybot to your current voice channel"""
+        if cxt.author.voice is None:
+            await cxt.send('```NOTE: You need to be in a voice channel to use this command.```')
+            return
+
+        channel = cxt.author.voice.channel
+        await channel.connect()
+
+    # Leave voice chat command
+    @commands.command(pass_context = True, aliases=['decloak'])
+    async def leave(self, cxt):
+        """Tells cappybot to leave whatever voice channel it is in"""
+        await cxt.voice_client.disconnect()
+
+    # Stop typing sample command
+    @commands.command(pass_context = True)
+    async def stop(self, cxt):
+        """Tells cappybot to stop playing the current typing sample"""
+
+        # set up voice channel
+        guild = cxt.guild
+        voice_client: discord.VoiceClient = discord.utils.get(bot.voice_clients, guild=guild)
+
+        # Catch if cappybot isn't in voice channel
+        if voice_client is None:
+            await cxt.send("```NOTE: there is no need to use this command if cappybot is not in a voice channel.```")
+            return
+
+        if voice_client.is_playing():
+            voice_client.stop()
 
 
 
