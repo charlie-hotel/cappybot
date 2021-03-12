@@ -2,10 +2,13 @@ import discord
 import os
 import random
 import requests
+import time
 
 from var_dump import var_dump
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
+from discord.ext.tasks import loop
+from asyncio import sleep
 from dotenv import load_dotenv
 from frogtips import api as frogtips_api
 from uuid import UUID
@@ -13,7 +16,7 @@ from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.18"
+VERSION_NUMBER = "0.8.19"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -36,6 +39,19 @@ if FFMPEG_WIN == None:
 # Initialise the bot
 help_command = commands.DefaultHelpCommand(no_category = 'Misc')
 bot = commands.Bot(('?', '!k'), help_command = help_command)
+client = discord.Client()
+
+
+
+# Set up random statuses
+statuses = None
+try:
+    with open('resources/statuses.txt') as f:
+        statuses = [line.rstrip() for line in f]
+    if not statuses:
+        print("Random statuses feature disabled since 'resources/statuses.txt' file is empty.")
+except OSError as e:
+    print("Random statuses feature disabled since 'resources/statuses.txt' file is absent.")
 
 
 
@@ -88,7 +104,7 @@ class Community(commands.Cog):
             return
 
         # Get list of files from appropriate sounds directory
-        (_, _, files) = next(os.walk('ibm_sounds/'))
+        (_, _, files) = next(os.walk('resources/ibm_sounds/'))
 
         # Randomise list and choose a file to play
         random.shuffle(files)
@@ -99,9 +115,9 @@ class Community(commands.Cog):
         # Set up audio source
         audio_source = None
         if os.name == 'nt':
-            audio_source = discord.FFmpegPCMAudio(executable=FFMPEG_WIN, source=f'ibm_sounds/{to_play}')
+            audio_source = discord.FFmpegPCMAudio(executable=FFMPEG_WIN, source=f'resources/ibm_sounds/{to_play}')
         else:
-            audio_source = discord.FFmpegPCMAudio(f'ibm_sounds/{to_play}.')
+            audio_source = discord.FFmpegPCMAudio(f'resources/ibm_sounds/{to_play}.')
 
         if not voice_client.is_playing():
             await cxt.send(f"Playing buckling springs typing sample `{to_play}`. You can use `?clack` again to play a different one.")
@@ -756,9 +772,11 @@ class Subreddits(commands.Cog):
                     break
                 c -= 1
                 hits -= 1
+
                 response += f"> **{i + 1}:** " \
                             f" \"{post['data']['title']}\" " \
                             f" by u/{post['data']['author']}, " \
+                            f" {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(post['data']['created']))}, " \
                             f" <https://www.reddit.com{post['data']['permalink']}>\n" \
             
             if hits > 0:
