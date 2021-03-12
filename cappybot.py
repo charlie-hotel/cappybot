@@ -16,7 +16,7 @@ from xml.etree.ElementTree import fromstring, ElementTree
 from utils import *
 
 # Global variables
-VERSION_NUMBER = "0.8.19"
+VERSION_NUMBER = "0.8.20"
 SHARK_UID = "<@!232598411654725633>"
 DOOP_UID = "<@!572963354902134787>"
 
@@ -217,7 +217,7 @@ class Researching(commands.Cog):
 
             # Handle other situation where no results are returned
             if result['hits'] == 0:
-                message = f'No results for "{query}" found in Admiral Shark\'s Keebs'
+                message = f'No results for "{query}" found in Admiral Shark\'s Keebs.'
                 await cxt.send(message)
                 return
 
@@ -301,7 +301,7 @@ class Researching(commands.Cog):
             hits = rsts_title["query"]["searchinfo"]["totalhits"] + rsts_text["query"]["searchinfo"]["totalhits"]
 
             if hits == 0:
-                message = f'No results for "{query}" found in deskthority wiki'
+                message = f'No results for "{query}" found in deskthority wiki.'
                 await cxt.send(message)
                 return
 
@@ -363,6 +363,12 @@ class Researching(commands.Cog):
             # Get search results
             req = requests.get(url=URL, params=PARAMS)
             raw = req.content
+
+            # Check for results
+            if raw.decode("utf-8") == "Search was successful, but no results were found matching the specified criteria.":
+                message = f'No results for "{query}" found in the FCC database.'
+                await cxt.send(message)
+                return
             
             # Parse raw response into 'objectified' XML tree
             tree = ElementTree(fromstring(raw))
@@ -375,7 +381,7 @@ class Researching(commands.Cog):
 
             # Check for results
             if hits == 0:
-                message = f'No results for "{query}" found in the FCC database'
+                message = f'No results for "{query}" found in the FCC database.'
                 await cxt.send(message)
                 return
 
@@ -577,7 +583,7 @@ class Researching(commands.Cog):
 
             # Handle other situation where no results are returned
             if result['hits'] == 0:
-                message = f'No results for "{query}" found in Admiral Shark\'s Keebs'
+                message = f'No results for "{query}" found in Admiral Shark\'s Keebs.'
                 await cxt.send(message)
                 return
 
@@ -636,7 +642,7 @@ class Researching(commands.Cog):
 
             # Handle other situation where no results are returned
             if result['hits'] == 0:
-                message = f'No results for "{query}" found in Admiral Shark\'s Keebs'
+                message = f'No results for "{query}" found in Admiral Shark\'s Keebs.'
                 await cxt.send(message)
                 return
 
@@ -697,7 +703,7 @@ class Subreddits(commands.Cog):
             hits = rsts["data"]["dist"]
 
             if hits == 0:
-                message = f'No results for "{query}" found in r/MechanicalKeyboards'
+                message = f'No results for "{query}" found in r/MechanicalKeyboards.'
                 await cxt.send(message)
                 return
 
@@ -757,7 +763,7 @@ class Subreddits(commands.Cog):
             hits = rsts["data"]["dist"]
 
             if hits == 0:
-                message = f'No results for "{query}" found in r/MechMarket'
+                message = f'No results for "{query}" found in r/MechMarket.'
                 await cxt.send(message)
                 return
 
@@ -818,7 +824,7 @@ class Subreddits(commands.Cog):
             hits = rsts["data"]["dist"]
 
             if hits == 0:
-                message = f'No results for "{query}" found in r/ModelF'
+                message = f'No results for "{query}" found in r/ModelF.'
                 await cxt.send(message)
                 return
 
@@ -877,7 +883,7 @@ class Subreddits(commands.Cog):
             hits = rsts["data"]["dist"]
 
             if hits == 0:
-                message = f'No results for "{query}" found in r/ModelM'
+                message = f'No results for "{query}" found in r/ModelM.'
                 await cxt.send(message)
                 return
 
@@ -936,7 +942,7 @@ class Subreddits(commands.Cog):
             hits = rsts["data"]["dist"]
 
             if hits == 0:
-                message = f'No results for "{query}" found in r/ThinkPad'
+                message = f'No results for "{query}" found in r/ThinkPad.'
                 await cxt.send(message)
                 return
 
